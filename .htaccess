@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# no file, no directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Every request to index.php
+RewriteRule ^ index.php [L]
