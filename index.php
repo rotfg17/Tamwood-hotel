@@ -1,27 +1,27 @@
 <?php
 
-require_once './config/Database.php';
-require_once './controller/UserController.php';
+require_once './Back-end/config/Database.php';
+require_once './Back-end/controller/UserController.php';
 
 function route($method, $path) {
     $parsedPath = parse_url($path, PHP_URL_PATH);
 
     $db = new Database();
 
-    $ROOT_PATH = '/Tamwood-hotel/Back-end';
+    $ROOT_PATH = '/Tamwood-hotel/';
 
     if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
         echo "index.php";
-    } else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'/api/users') {
+    } else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/users') {
         $controller = new UserController($db, $method);
         return json_encode($controller->processRequest('users'));
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'/api/add-user') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') {
         $controller = new UserController($db, $method);
         $request = $controller->processRequest('add-user');
         json_encode($request);
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'/api/update-user') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-user') {
         $controller = new UserController($db, $method);
         $request = $controller->processRequest('update-user');
         json_encode($request);
