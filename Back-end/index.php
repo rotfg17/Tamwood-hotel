@@ -8,18 +8,20 @@ function route($method, $path) {
 
     $db = new Database();
 
-    if ($method === 'GET' && $parsedPath === '/Tamwood-hotel/') {
+    $ROOT_PATH = '/Tamwood-hotel/Back-end';
+
+    if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
         echo "index.php";
-    } else if ($method === 'GET' && $parsedPath === '/Tamwood-hotel/api/users') {
+    } else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'/api/users') {
         $controller = new UserController($db, $method);
-        json_encode($controller->processRequest('users'));
+        return json_encode($controller->processRequest('users'));
     } 
-    else if ($method === 'POST' && $parsedPath === '/Tamwood-hotel/api/add-user') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'/api/add-user') {
         $controller = new UserController($db, $method);
         $request = $controller->processRequest('add-user');
         json_encode($request);
     } 
-    else if ($method === 'POST' && $parsedPath === '/Tamwood-hotel/api/update-user') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'/api/update-user') {
         $controller = new UserController($db, $method);
         $request = $controller->processRequest('update-user');
         json_encode($request);
