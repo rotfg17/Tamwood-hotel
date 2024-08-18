@@ -29,7 +29,7 @@ class TransactionMapper{
             return $transactions;
         } catch (PDOException $e) {
             error_log("Error in getUserTransactions: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 
@@ -52,7 +52,7 @@ class TransactionMapper{
             return false;
         } catch (PDOException $e) {
             error_log("Error in createUserTransaction: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 
@@ -70,7 +70,7 @@ class TransactionMapper{
             return false;
         } catch (PDOException $e) {
             error_log("Error in deleteUserTransaction: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 }

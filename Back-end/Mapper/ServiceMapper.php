@@ -26,7 +26,7 @@ class ServiceMapper{
             return $services;
         } catch (PDOException $e) {
             error_log("Error in getServices: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 
@@ -48,7 +48,7 @@ class ServiceMapper{
             return false;
         } catch (PDOException $e) {
             error_log("Error in createService: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 
@@ -88,7 +88,7 @@ class ServiceMapper{
             return false;
         } catch (PDOException $e) {
             error_log("Error in updateService: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 
@@ -106,7 +106,7 @@ class ServiceMapper{
             return false;
         } catch (PDOException $e) {
             error_log("Error in deleteService: " . $e->getMessage());
-            return [];
+            return $e->getMessage();
         }
     }
 }
