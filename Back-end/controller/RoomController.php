@@ -16,6 +16,18 @@ class RoomController {
             case 'room-types':
                 $response = $this->getRoomTypes();
                 break;
+            case 'rooms':
+                $response = $this->getRooms();
+                break;
+            case 'create-room':
+                $response = $this->createRoom();
+                break;
+            case 'update-room':
+                $response = $this->updateRoom();
+                break;
+            case 'delete-room':
+                $response = $this->deleteRoom();
+                break;
             default:
                 $response = $this->notFoundResponse();
                 break;
@@ -29,11 +41,91 @@ class RoomController {
 
     public function getRoomTypes() {
         try {
-            $RoomMapper = new RoomMapper($this->db);
-            $result = $RoomMapper -> getRoomTypes();
+            $roomMapper = new RoomMapper($this->db);
+
+            $result = $roomMapper -> getRoomTypes();
+
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error getting Rooms: " . $e->getMessage()); // 에러 로그 추가
+            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+        }
+    }
+
+    public function getRooms() {
+        try {
+            $roomMapper = new RoomMapper($this->db);
+            $status = isset($_GET['status']) ? $_GET['status'] : null;
+
+            $result = $roomMapper->getRooms($status);
+
+            return $this->jsonResponse(200, $result);
+        } catch (PDOException $e) {
+            error_log("Error getting Rooms: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+        }
+    }
+
+    public function createRoom() {
+        try {
+            $roomMapper = new RoomMapper($this->db);
+            $input = $_POST;
+
+            $room = new Room();
+            $room->setRoomNumber($input['room_number']);
+            $room->setRoomType($input['room_type']);
+            $room->setPricePerNight($input['price_per_night']);
+            $room->setDescription($input['description']);
+            $room->setStatus($input['status']);
+            $room->setImageUrl($room->uploadFile($_FILES['image']));
+            
+            $result = $roomMapper->createRoom($room);
+
+            return $this->jsonResponse(200, $result);
+        } catch (PDOException $e) {
+            error_log("Error getting Rooms: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+        }
+    }
+
+    public function updateRoom() {
+        try {
+            $roomMapper = new RoomMapper($this->db);
+            $input = $_POST;
+            
+            $room = new Room();
+            $room->setRoomId($input['room_id']);
+            $room->setRoomNumber($input['room_number']);
+            $room->setRoomType($input['room_type']);
+            $room->setPricePerNight($input['price_per_night']);
+            $room->setDescription($input['description']);
+            $room->setStatus($input['status']);
+            if (isset($_FILES['image'])) {
+                $room->setImageUrl($room->uploadFile($_FILES['image']));
+            }
+
+            $result = $roomMapper->updateRoom($room);
+
+            return $this->jsonResponse(200, $result);
+        } catch (PDOException $e) {
+            error_log("Error getting Rooms: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+        }
+    }
+
+    public function deleteRoom() {
+        try {
+            $roomMapper = new RoomMapper($this->db);
+            $input = $_POST;
+            
+            $room = new Room();
+            $room->setRoomId($input['room_id']);
+
+            $result = $roomMapper->deleteRoom($room);
+
+            return $this->jsonResponse(200, $result);
+        } catch (PDOException $e) {
+            error_log("Error getting Rooms: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
         }
     }

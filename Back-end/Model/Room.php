@@ -1,4 +1,6 @@
 <?php 
+$uploadFileDir = __DIR__ . '/../uploads/';
+
 class Room {
     private $room_id;
     private $room_number;
@@ -9,7 +11,7 @@ class Room {
     private $status;
 
     // Constructor
-    public function __construct($room_id, $room_number, $room_type, $price_per_night, $description, $image_url, $status) {
+    public function __construct($room_id = null, $room_number = null, $room_type = null, $price_per_night = 0.0, $description = null, $image_url = null, $status = null, $created_at = null, $updated_at = null) {
         $this->room_id = $room_id;
         $this->room_number = $room_number;
         $this->room_type = $room_type;
@@ -17,6 +19,8 @@ class Room {
         $this->description = $description;
         $this->image_url = $image_url;
         $this->status = $status;
+        $this->created_at = $created_at;
+        $this->updated_at = $updated_at;
     }
 
     // Getters
@@ -48,6 +52,14 @@ class Room {
         return $this->status;
     }
 
+    public function getCreatedAt() {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt() {
+        return $this->updated_at;
+    }
+
     // Setters
     public function setRoomId($room_id) {
         $this->room_id = $room_id;
@@ -75,6 +87,40 @@ class Room {
 
     public function setStatus($status) {
         $this->status = $status;
+    }
+
+    public function setCreatedAt() {
+        $this->created_at = $created_at;
+    }
+
+    public function setUpdatedAt() {
+        $this->updated_at = $updated_at;
+    }
+
+    function uploadFile(array $file): string {
+        global $uploadFileDir;
+
+        if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
+            $fileName = $file['name'];
+            $fileNameCmps = explode(".", $fileName);
+            $fileExtension = strtolower(end($fileNameCmps));
+        
+            $allowedFileExtensions = ['jpg', 'gif', 'png', 'webp'];
+            if (in_array($fileExtension, $allowedFileExtensions)) {
+                $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+                $dest_path = $uploadFileDir . $newFileName;
+    
+                if(move_uploaded_file($file['tmp_name'], $dest_path)) {
+                    return $newFileName;
+                } else {
+                    throw new Exception("There was an error moving the uploaded file.", 406);
+                }
+            } else {
+                throw new Exception("Upload failed. Allowed file types: " . implode(',', $allowedFileExtensions), 406);
+            }
+        } else {
+            throw new Exception("No file uploaded or there was an upload error.", 406);
+        }
     }
 }
 

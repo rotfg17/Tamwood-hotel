@@ -8,7 +8,7 @@ class Transaction {
     private $description;
 
     // Constructor
-    public function __construct($transaction_id, $user_id, $transaction_type, $amount, $transaction_date, $description) {
+    public function __construct($transaction_id = null, $user_id = null, $transaction_type = null, $amount = 0.0, $transaction_date = null, $description = null) {
         $this->transaction_id = $transaction_id;
         $this->user_id = $user_id;
         $this->transaction_type = $transaction_type;

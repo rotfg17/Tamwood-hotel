@@ -4,13 +4,17 @@ class Service {
     private $service_name;
     private $service_description;
     private $price;
+    private $created_at;
+    private $updated_at;
 
     // Constructor
-    public function __construct($service_id, $service_name, $service_description, $price) {
+    public function __construct($service_id = null, $service_name = null, $service_description = null, $price = 0.0, $created_at = null, $updated_at = null) {
         $this->service_id = $service_id;
         $this->service_name = $service_name;
         $this->service_description = $service_description;
         $this->price = $price;
+        $this->created_at = $created_at;
+        $this->updated_at = $updated_at;
     }
 
     // Getters
@@ -30,6 +34,14 @@ class Service {
         return $this->price;
     }
 
+    public function getCreatedAt() {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt() {
+        return $this->updated_at;
+    }
+
     // Setters
     public function setServiceId($service_id) {
         $this->service_id = $service_id;
@@ -45,6 +57,14 @@ class Service {
 
     public function setPrice($price) {
         $this->price = $price;
+    }
+
+    public function setCreatedAt() {
+        $this->created_at = $created_at;
+    }
+
+    public function setUpdatedAt() {
+        $this->updated_at = $updated_at;
     }
 }
 
