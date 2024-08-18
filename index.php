@@ -34,7 +34,32 @@ function route($method, $path) {
     // room
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/room-type') {
         $controller = new RoomController($db, $method);
-        return json_encode($controller->processRequest('room-types'));
+        $request = $controller->processRequest('room-types');
+        json_encode($request);
+    }
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/rooms') {
+        $controller = new RoomController($db, $method);
+        $request = $controller->processRequest('rooms');
+
+        json_encode($request);
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-room') {
+        $controller = new RoomController($db, $method);
+        $request = $controller->processRequest('create-room');
+
+        json_encode($request);
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-room') {
+        $controller = new RoomController($db, $method);
+        $request = $controller->processRequest('update-room');
+
+        json_encode($request);
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-room') {
+        $controller = new RoomController($db, $method);
+        $request = $controller->processRequest('delete-room');
+
+        json_encode($request);
     }
 
     // transaction
