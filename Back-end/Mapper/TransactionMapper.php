@@ -28,7 +28,7 @@ class TransactionMapper{
 
             return $transactions;
         } catch (PDOException $e) {
-            error_log("Error in getRooms: " . $e->getMessage());
+            error_log("Error in getUserTransactions: " . $e->getMessage());
             return [];
         }
     }
@@ -51,7 +51,7 @@ class TransactionMapper{
             }
             return false;
         } catch (PDOException $e) {
-            error_log("Error in getRooms: " . $e->getMessage());
+            error_log("Error in createUserTransaction: " . $e->getMessage());
             return [];
         }
     }
@@ -69,7 +69,7 @@ class TransactionMapper{
             }
             return false;
         } catch (PDOException $e) {
-            error_log("Error in getRooms: " . $e->getMessage());
+            error_log("Error in deleteUserTransaction: " . $e->getMessage());
             return [];
         }
     }

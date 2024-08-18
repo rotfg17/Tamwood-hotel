@@ -4,6 +4,7 @@ require_once './Back-end/config/Database.php';
 require_once './Back-end/controller/UserController.php';
 require_once './Back-end/controller/RoomController.php';
 require_once './Back-end/controller/TransactionController.php';
+require_once './Back-end/controller/ServiceController.php';
 
 function route($method, $path) {
     $parsedPath = parse_url($path, PHP_URL_PATH);
@@ -52,6 +53,29 @@ function route($method, $path) {
         $request = $controller->processRequest('delete-transaction');
         json_encode($request);
     }
+
+    // service
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/services') {
+        $controller = new ServiceController($db, $method);
+        $request = $controller->processRequest('services');
+        json_encode($request);
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-service') {
+        $controller = new ServiceController($db, $method);
+        $request = $controller->processRequest('create-service');
+        json_encode($request);
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-service') {
+        $controller = new ServiceController($db, $method);
+        $request = $controller->processRequest('update-service');
+        json_encode($request);
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-service') {
+        $controller = new ServiceController($db, $method);
+        $request = $controller->processRequest('delete-service');
+        json_encode($request);
+    }
+
     else {
         header("HTTP/1.1 404 Not Found");
         echo json_encode(['error' => 'Route not found']);

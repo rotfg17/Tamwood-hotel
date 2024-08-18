@@ -46,8 +46,8 @@ class TransactionController {
 
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
-            error_log("Error getting Rooms: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+            error_log("Error getting Transactions: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Transactions: " . $e->getMessage()]);
         }
     }
 
@@ -66,8 +66,8 @@ class TransactionController {
 
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
-            error_log("Error getting Rooms: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+            error_log("Error getting Transactions: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Transactions: " . $e->getMessage()]);
         }
     }
 
@@ -83,8 +83,8 @@ class TransactionController {
 
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
-            error_log("Error getting Rooms: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+            error_log("Error getting Transactions: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Transactions: " . $e->getMessage()]);
         }
     }
     
