@@ -15,17 +15,26 @@ function route($method, $path) {
 
     if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
         echo "index.php";
-    } else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/users') {
+    } 
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
+        $controller = new UserController($db, $method);
+        return json_encode($controller->processRequest('user-list'));
+    } 
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/users') {
         $controller = new UserController($db, $method);
         return json_encode($controller->processRequest('users'));
     } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') {
         $controller = new UserController($db, $method);
-        $request = $controller->processRequest('add-user');
-        json_encode($request);
+        return  json_encode($controller->processRequest('add-user'));
     } 
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-user') {
         $controller = new UserController($db, $method);
         return json_encode($controller->processRequest('update-user'));
+
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-user') {
+        $controller = new UserController($db, $method);
+        return json_encode($controller->processRequest('delete-user'));
     }
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-user') {
         $controller = new UserController($db, $method);
