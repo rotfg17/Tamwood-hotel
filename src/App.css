@@ -235,3 +235,29 @@ body {
   color: #000; /* Color del texto de las opciones */
 }
 
+/* styles for tables*/
+
+
+.table-custom thead th {
+  background-color: #02508a; /* Color de fondo oscuro para los encabezados */
+  color: #ffffff; /* Texto blanco para contraste */
+  border-color: #dee2e6; /* Borde más claro para los encabezados */
+}
+
+.table-custom tbody td {
+  color: #FFFFFF; /* Color oscuro para el texto del cuerpo */
+  padding: 10px;
+}
+
+/* Estilos condicionales basados en el estado de la habitación */
+.table-custom .status-available {
+  color: #28a745; /* Verde para habitaciones disponibles */
+}
+
+.table-custom .status-unavailable {
+  color: #dc3545; /* Rojo para habitaciones no disponibles */
+}
+
+.table-custom .status-maintenance {
+  color: #ffc107; /* Amarillo para mantenimiento */
+}

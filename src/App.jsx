@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import '@fontsource/poppins'; // Defaults to weight 400
+
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Wallet from './pages/Wallet';

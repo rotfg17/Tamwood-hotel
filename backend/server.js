@@ -22,13 +22,17 @@ DB.connect((err) => {
 });
 
 // Ruta para obtener habitaciones
-app.get('/api/rooms', (req, res) => {
-    const SQL_QUERY = "SELECT * FROM rooms";
-    DB.query(SQL_QUERY, (err, results) => {
+app.post('/api/rooms', (req, res) => {
+    const { room_number, room_type, price_per_night, description, image_url,status,create_at,updated_at } = req.body;
+    const SQL_QUERY = `INSERT INTO rooms (room_number, room_type, price_per_night, description, image_url,status,create_at,updated_at) VALUES (?, ?, ?, ?, ?,?,?,?)`;
+
+    DB.query(SQL_QUERY, [room_number, room_type, price_per_night, description, image_url,status,create_at,updated_at], (err, results) => {
         if (err) {
-            throw err;
+            console.error("Error adding room:", err);
+            res.status(500).send('Error adding room');
+            return;
         }
-        res.json(results);
+        res.status(201).send('Room added successfully!');
     });
 });
 
