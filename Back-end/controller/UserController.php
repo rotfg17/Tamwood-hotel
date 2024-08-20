@@ -80,11 +80,16 @@ class UserController{
             $user-> setEmail($input['email']);
             $user -> setRole($input['role']);
 
-            if ($userMapper -> createUser($user)) {
-                return $this->jsonResponse(201, ['message' => 'User Created']);
+            if($userMapper -> verifyUserbyEmail($user)){
+                if ($userMapper -> createUser($user)) {
+                    return print_r($this->jsonResponse(201, ['message' => 'User Created']));
+                } else {
+                    throw new Exception("Failed to create user.");
+                }
             } else {
-                throw new Exception("Failed to create user.");
+                echo "User already exist";
             }
+
         } catch (Exception $e) {
             error_log("Error creating user: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error creating user: " . $e->getMessage()]);

@@ -24,9 +24,9 @@ class BookingMapper{
             return 0;
         }
     }
-    public function getBookingList(Paging $paging, int $curr_number=1,  string $searchString="", string $searchType ="", int $records_per_page = 20) {
-        // verify page number (set init 1)
-        $page_number = $paging -> getTotalPages();
+    public function getBookingList(Paging $paging, string $searchString="", string $searchType ="") {
+        // Page per row
+        $records_per_page = $paging -> getItemsPerPage();
         // cal OFFSET 
         $offset = $paging -> getOffset();
 
@@ -49,7 +49,6 @@ class BookingMapper{
             $query .= " WHERE r.room_number LIKE '%".$searchString."%'";
             $query .= " ORDER BY booking_id DESC 
                         LIMIT :limit OFFSET :offset";
-        echo $query;
         // biding <paramete></paramete>r
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':limit', $records_per_page, PDO::PARAM_INT);

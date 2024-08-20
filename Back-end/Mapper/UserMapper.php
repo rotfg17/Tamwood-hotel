@@ -23,7 +23,7 @@ class UserMapper{
             return 0;
         }
     }
-    public function getUserList(Paging $paging, string $searchString="", string $searchType ="") {
+    public function getUserList(Paging $paging, string $searchString="", string $searchType =""):array {
         // Page per row
         $records_per_page = $paging -> getItemsPerPage();
         // cal OFFSET 
@@ -57,7 +57,7 @@ class UserMapper{
         }
     }
 
-    public function getUsers() {
+    public function getUsers():array {
         try {//need paging util
             $query = "SELECT * 
                         FROM " . $this->table_name. 
@@ -77,25 +77,29 @@ class UserMapper{
     }
     
     
+    public function verifyUserbyEmail(User $user) {
+        $query = "SELECT count(*) as count FROM ".$this->table_name. " WHERE email=:email";
 
-    public function createUser(User $user) {
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $user->getEmail());
+        $stmt->execute();
+        $count = $stmt->fetch(PDO::FETCH_ASSOC);
+        if($count['count'] > 0) return false;
+        else return true;
+
+    }
+    public function createUser(User $user):bool {
         $query = "INSERT INTO " . $this->table_name . "(
                                                             username,
                                                             password_hash,
                                                             email,
-                                                            role,
-                                                            is_locked,
-                                                            failed_login_attempts,
-                                                            wallet_balance
+                                                            role
                                                         ) 
                                                 values (
                                                             :name, 
                                                             'hashed-password',
                                                             :email,
-                                                            :role,
-                                                            0,
-                                                            0,
-                                                            0.0
+                                                            :role
                                                         )";
 
         $stmt = $this->conn->prepare($query);
