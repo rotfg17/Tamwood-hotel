@@ -264,3 +264,105 @@ body {
 .table-custom .status-maintenance {
   color: #ffc107; /* Amarillo para mantenimiento */
 }
+
+
+
+/* styles for rooms files*/
+.room-form {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  /* border: 1px solid #ddd; */
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+  /* background-color: #f9f9f9; */
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.form-row label {
+  flex: 1;
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.room-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.room-form input,
+.room-form textarea,
+.room-form select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.room-form button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.room-form button:hover {
+  background-color: #0056b3;
+}
+
+
+/* styles for Wallet Transaction*/
+.transaction-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  /* background-color: #f9f9f9; */
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.transaction-table th,
+.transaction-table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.transaction-table th {
+  background-color: #333;
+  color: #fff;
+}
+
+.transaction-table tbody tr:hover {
+  background-color: #333;
+}
+
+.transaction-table td {
+  color: #ffffff;
+}
+
+.transaction-container h2 {
+  text-align: center;
+  color: #FFFFFF;
+}

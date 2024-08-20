@@ -111,6 +111,7 @@ function route($method, $path) {
 // Real Request
 try {
     header("Access-Control-Allow-Origin: *");
+    
     // session_start();
 
     // $value = isset($_SERVER['HTTP_X_SESSION_VALUE']) ? $_SERVER['HTTP_X_SESSION_VALUE'] : null;
