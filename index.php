@@ -110,6 +110,29 @@ function route($method, $path) {
 
 // Real Request
 try {
+    header("Access-Control-Allow-Origin: *");
+    // session_start();
+
+    // $value = isset($_SERVER['HTTP_X_SESSION_VALUE']) ? $_SERVER['HTTP_X_SESSION_VALUE'] : null;
+
+    // if ($value === 'tamwood-hotel:)') {
+    //     if (isset($_SESSION['timeout'])) {
+    //         if ($_SESSION['timeout'] > time()) {
+    //             echo 'renew';
+    //             $_SESSION['timeout'] = time() + 1000;
+    //         } else {
+    //             echo 'destroy';
+    //             session_unset();
+    //             session_destroy();
+    //         }
+    //     } else {
+    //         echo 'add things';
+    //         $_SESSION['timeout'] = time() + 3600;
+    //     }
+    // } else {
+    //     throw new Exception("Wrong session keys", 406);
+    // }
+
     route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 } catch(Exception $error) {
     header("HTTP/1.1 500 Internal Server Error");
