@@ -25,15 +25,15 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* <Route path="/" element={<Dashboard />} /> */}
-        <Route path="/" element={<Dashboard />}>
-          <Route path="dashboard/users" element={<Users />} />
-          <Route path="dashboard/wallet" element={<Wallet />} />
-          <Route path="dashboard/rooms" element={<Rooms />} />
-          <Route path="dashboard/bookings" element={<Bookings />} />
-          <Route path="dashboard/services" element={<Services />} />
-          <Route path="dashboard/comments" element={<Comments />} />
-          <Route path="dashboard/audit_logs" element={<Audit_Logs />} />
-          <Route path="dashboard/sessions" element={<Sessions />} />
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route path="users" element={<Users />} />
+          <Route path="wallet" element={<Wallet />} />
+          <Route path="rooms" element={<Rooms />} />
+          <Route path="bookings" element={<Bookings />} />
+          <Route path="services" element={<Services />} />
+          <Route path="comments" element={<Comments />} />
+          <Route path="audit_logs" element={<Audit_Logs />} />
+          <Route path="sessions" element={<Sessions />} />
         </Route>
         <Route path="*" element={<NoPage />} />
       </Routes>

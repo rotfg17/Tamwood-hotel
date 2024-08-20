@@ -64,7 +64,7 @@
 
 // export default Rooms;
 import React, { useState } from 'react';
-
+// import PostServices from '../../index';
 import axios from 'axios';
 
 const RoomForm = () => {
