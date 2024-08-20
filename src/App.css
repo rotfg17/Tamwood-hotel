@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
 body {
   margin: 0;
   padding: 0;
   color: #9e9ea4;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   box-sizing: border-box;
 }
 
@@ -46,7 +46,6 @@ body {
   font-size: 20px;
   color: #fff;
   flex-grow: 1; /* Permite que el título use el espacio disponible entre los íconos */
-
 }
 
 .search-bar {
@@ -59,7 +58,6 @@ body {
 }
 
 /* Estilos para el menú de configuración */
-
 
 .settings-menu {
   position: absolute;
@@ -101,15 +99,18 @@ body {
 }
 
 /* Estilos para los iconos de notificación y perfil */
-.notifications, .settings, .profile {
+.notifications,
+.settings,
+.profile {
   position: relative;
   cursor: pointer;
   margin-right: 15px; /* Añade espacio entre los íconos */
   font-size: 20px;
-  
 }
 
-.notifications-menu, .settings-menu, .profile-menu {
+.notifications-menu,
+.settings-menu,
+.profile-menu {
   position: absolute;
   top: 100%; /* Justo debajo del ícono */
   right: 0;
@@ -123,32 +124,40 @@ body {
   width: 200px;
 }
 
-.notifications-menu ul, .settings-menu ul, .profile-menu ul {
+.notifications-menu ul,
+.settings-menu ul,
+.profile-menu ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
 
-.notifications-menu ul li, .settings-menu ul li, .profile-menu ul li {
+.notifications-menu ul li,
+.settings-menu ul li,
+.profile-menu ul li {
   border-bottom: 1px solid #ddd;
 }
 
-.notifications-menu ul li:last-child, .settings-menu ul li:last-child, .profile-menu ul li:last-child {
+.notifications-menu ul li:last-child,
+.settings-menu ul li:last-child,
+.profile-menu ul li:last-child {
   border-bottom: none;
 }
 
-.notifications-menu ul li a, .settings-menu ul li a, .profile-menu ul li a {
+.notifications-menu ul li a,
+.settings-menu ul li a,
+.profile-menu ul li a {
   display: block;
   padding: 10px;
   text-decoration: none;
   color: #333;
 }
 
-.notifications-menu ul li a:hover, .settings-menu ul li a:hover, .profile-menu ul li a:hover {
+.notifications-menu ul li a:hover,
+.settings-menu ul li a:hover,
+.profile-menu ul li a:hover {
   background: #f4f4f4;
 }
-
-
 
 /* Sidebar styles */
 .dashboard {
@@ -237,7 +246,6 @@ body {
 
 /* styles for tables*/
 
-
 .table-custom thead th {
   background-color: #02508a; /* Color de fondo oscuro para los encabezados */
   color: #ffffff; /* Texto blanco para contraste */
@@ -245,10 +253,10 @@ body {
 }
 
 .table-custom tbody td {
-  color: #FFFFFF; /* Color oscuro para el texto del cuerpo */
+  color: #ffffff; /* Color oscuro para el texto del cuerpo */
   padding: 10px;
 }
- tr th{
+tr th {
   padding: 10px;
 }
 
@@ -263,4 +271,37 @@ body {
 
 .table-custom .status-maintenance {
   color: #ffc107; /* Amarillo para mantenimiento */
+}
+
+.header {
+  > div {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    img {
+      max-width: 200px;
+    }
+    .headerButtons {
+      display: flex;
+      gap: 10px;
+      a {
+        text-decoration: none;
+        padding: 12px 48px;
+        text-transform: uppercase;
+        color: #000;
+        border: 2px solid #000;
+        font-weight: 500;
+        &:nth-child(2) {
+          padding: 12px 54px;
+          background: #0862df;
+          color: #fff;
+          border-color: #0862df;
+        }
+      }
+    }
+  }
 }
