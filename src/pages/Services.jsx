@@ -7,7 +7,7 @@ const Services = () => {
 
     const fetchServices = async () => {
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel//api/services');
+            const response = await fetch('http://localhost/Tamwood-hotel/api/services');
             if (!response.ok) {
                 throw new Error('Error al obtener los datos del servidor');
             }
