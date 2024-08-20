@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  color: #9e9ea4;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+/* General styles for the dashboard container */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #1d2634;
+  flex-direction: column;
+}
+
+/* Top bar styles */
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #02508a;
+  color: #fff;
+  box-shadow: rgba(0, 0, 0, 0.85) 0px 1px;
+  position: fixed;
+  top: 0;
+  left: 230px; /* Ajustar según el ancho del sidebar */
+  width: calc(100% - 250px); /* Ajustar según el ancho del sidebar */
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+  transition: width 0.3s ease, left 0.3s ease;
+  justify-content: space-between; /* Distribuye el espacio entre los elementos */
+}
+
+.hamburger {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.dashboard-title {
+  margin: 0; /* Ajustar espacio alrededor del título */
+  font-size: 20px;
+  color: #fff;
+  flex-grow: 1; /* Permite que el título use el espacio disponible entre los íconos */
+
+}
+
+.search-bar {
+  margin: 0 20px; /* Espaciado a los lados */
+  padding: 5px 10px; /* Ajustar el relleno */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  max-width: 200px; /* Tamaño más pequeño */
+}
+
+/* Estilos para el menú de configuración */
+
+
+.settings-menu {
+  position: absolute;
+  top: 100%; /* Justo debajo del ícono */
+  right: 0;
+  background: #fff;
+  color: #333;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 8px;
+  border-radius: 4px;
+  z-index: 1001; /* Asegúrate de que esté sobre otros elementos */
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+.settings-menu ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-menu ul li {
+  border-bottom: 1px solid #ddd;
+}
+
+.settings-menu ul li:last-child {
+  border-bottom: none;
+}
+
+.settings-menu ul li a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #333;
+}
+
+.settings-menu ul li a:hover {
+  background: #f4f4f4;
+}
+
+/* Estilos para los iconos de notificación y perfil */
+.notifications, .settings, .profile {
+  position: relative;
+  cursor: pointer;
+  margin-right: 15px; /* Añade espacio entre los íconos */
+  font-size: 20px;
+  
+}
+
+.notifications-menu, .settings-menu, .profile-menu {
+  position: absolute;
+  top: 100%; /* Justo debajo del ícono */
+  right: 0;
+  background: #fff;
+  color: #333;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 8px;
+  border-radius: 4px;
+  z-index: 1001; /* Asegúrate de que esté sobre otros elementos */
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+.notifications-menu ul, .settings-menu ul, .profile-menu ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notifications-menu ul li, .settings-menu ul li, .profile-menu ul li {
+  border-bottom: 1px solid #ddd;
+}
+
+.notifications-menu ul li:last-child, .settings-menu ul li:last-child, .profile-menu ul li:last-child {
+  border-bottom: none;
+}
+
+.notifications-menu ul li a, .settings-menu ul li a, .profile-menu ul li a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #333;
+}
+
+.notifications-menu ul li a:hover, .settings-menu ul li a:hover, .profile-menu ul li a:hover {
+  background: #f4f4f4;
+}
+
+
+
+/* Sidebar styles */
+.dashboard {
+  width: 190px; /* Fixed width for the sidebar */
+  height: 100vh; /* Full viewport height */
+  position: fixed; /* Fixed position to stay on the left */
+  top: 0;
+  left: 0;
+  background: #02508a; /* Background color for the sidebar */
+  padding: 20px;
+  box-shadow: rgba(0, 0, 0, 0.85) 0px 5px 15px;
+  transition: width 0.3s ease;
+  z-index: 500; /* Ensure it stays below the top bar */
+}
+
+.dashboard.collapsed {
+  width: 60px; /* Narrow width when collapsed */
+}
+
+.dashboard.collapsed .dashboard-title {
+  display: none; /* Hide the title when sidebar is collapsed */
+}
+
+.dashboard ul {
+  position: relative;
+  list-style-type: none;
+  padding: 15px;
+  top: 35px;
+}
+
+.dashboard ul li {
+  margin: 10px 0;
+}
+
+.dashboard ul li a {
+  text-decoration: none;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.dashboard ul li a .menu-text {
+  margin-left: 10px;
+  transition: opacity 0.3s ease;
+}
+
+.dashboard.collapsed .menu-text {
+  display: none; /* Hide text when collapsed */
+}
+
+.dashboard ul li a:hover {
+  background: #457b9d;
+  color: #fff;
+}
+
+/* Main content styles */
+.main-content {
+  margin-left: 230px; /* Space for the sidebar */
+  padding: 45px;
+  background-color: #1d2634; /* Background color for the main content */
+  flex-grow: 1;
+  transition: margin-left 0.3s ease; /* Smooth transition for content margin */
+  margin-top: 50px; /* Space for the top bar */
+}
+
+/* Adjust main content when sidebar is collapsed */
+.dashboard.collapsed ~ .main-content {
+  margin-left: 100px; /* Adjust based on collapsed sidebar width */
+}
+
+/* styles.css o en tu archivo de estilos */
+.custom-select {
+  background-color: #f0f0f0; /* Color de fondo */
+  color: #333; /* Color del texto */
+  border: 1px solid #ccc; /* Color del borde */
+  padding: 10px; /* Espaciado interno */
+  border-radius: 5px; /* Esquinas redondeadas */
+}
+
+.custom-select option {
+  background-color: #fff; /* Color de fondo de las opciones */
+  color: #000; /* Color del texto de las opciones */
+}
+
+/* styles for tables*/
+
+
+.table-custom thead th {
+  background-color: #02508a; /* Color de fondo oscuro para los encabezados */
+  color: #ffffff; /* Texto blanco para contraste */
+  border-color: #dee2e6; /* Borde más claro para los encabezados */
+}
+
+.table-custom tbody td {
+  color: #FFFFFF; /* Color oscuro para el texto del cuerpo */
+  padding: 10px;
+}
+ tr th{
+  padding: 10px;
+}
+
+/* Estilos condicionales basados en el estado de la habitación */
+.table-custom .status-available {
+  color: #28a745; /* Verde para habitaciones disponibles */
+}
+
+.table-custom .status-unavailable {
+  color: #dc3545; /* Rojo para habitaciones no disponibles */
+}
+
+.table-custom .status-maintenance {
+  color: #ffc107; /* Amarillo para mantenimiento */
+}
