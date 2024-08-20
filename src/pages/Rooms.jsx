@@ -64,6 +64,7 @@
 
 // export default Rooms;
 import React, { useState } from 'react';
+import 
 import axios from 'axios';
 
 const RoomForm = () => {
@@ -86,7 +87,7 @@ const RoomForm = () => {
     try {
       const response = await axios.post('http://localhost:3006/api/rooms', roomData);
       alert(response.data.message); // Mostrar el mensaje del servidor
-
+//ROBINSON
       // Limpiar el formulario después de la sumisión exitosa
       setRoomNumber('');
       setRoomType('');

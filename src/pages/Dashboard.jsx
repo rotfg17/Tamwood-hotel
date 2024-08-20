@@ -87,14 +87,14 @@ const Dashboard = () => {
       <div className="dashboard">
         <nav>
           <ul>
-            <li><Link to="users"><FontAwesomeIcon icon={faUser} /> <span className="menu-text">Users</span></Link></li>
-            <li><Link to="wallet"><FontAwesomeIcon icon={faWallet} /> <span className="menu-text">Wallet</span></Link></li>
-            <li><Link to="rooms"><FontAwesomeIcon icon={faBed} /> <span className="menu-text">Rooms</span></Link></li>
-            <li><Link to="bookings"><FontAwesomeIcon icon={faCalendarCheck} /> <span className="menu-text">Bookings</span></Link></li>
-            <li><Link to="services"><FontAwesomeIcon icon={faConciergeBell} /> <span className="menu-text">Services</span></Link></li>
-            <li><Link to="comments"><FontAwesomeIcon icon={faComments} /> <span className="menu-text">Comments</span></Link></li>
-            <li><Link to="audit_logs"><FontAwesomeIcon icon={faFileAlt} /> <span className="menu-text">Audit Logs</span></Link></li>
-            <li><Link to="sessions"><FontAwesomeIcon icon={faClock} /> <span className="menu-text">Sessions</span></Link></li>
+            <li><Link to="dashboard/users"><FontAwesomeIcon icon={faUser} /> <span className="menu-text">Users</span></Link></li>
+            <li><Link to="dashboard/wallet"><FontAwesomeIcon icon={faWallet} /> <span className="menu-text">Wallet</span></Link></li>
+            <li><Link to="dashboard/rooms"><FontAwesomeIcon icon={faBed} /> <span className="menu-text">Rooms</span></Link></li>
+            <li><Link to="dashboard/bookings"><FontAwesomeIcon icon={faCalendarCheck} /> <span className="menu-text">Bookings</span></Link></li>
+            <li><Link to="dashboard/services"><FontAwesomeIcon icon={faConciergeBell} /> <span className="menu-text">Services</span></Link></li>
+            <li><Link to="dashboard/comments"><FontAwesomeIcon icon={faComments} /> <span className="menu-text">Comments</span></Link></li>
+            <li><Link to="dashboard/audit_logs"><FontAwesomeIcon icon={faFileAlt} /> <span className="menu-text">Audit Logs</span></Link></li>
+            <li><Link to="dashboard/sessions"><FontAwesomeIcon icon={faClock} /> <span className="menu-text">Sessions</span></Link></li>
           </ul>
         </nav>
       </div>
