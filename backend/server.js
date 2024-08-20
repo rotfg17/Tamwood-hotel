@@ -23,10 +23,10 @@ DB.connect((err) => {
 
 // Ruta para obtener habitaciones
 app.post('/api/rooms', (req, res) => {
-    const { room_number, room_type, price_per_night, description, image_url,status,create_at,updated_at } = req.body;
-    const SQL_QUERY = `INSERT INTO rooms (room_number, room_type, price_per_night, description, image_url,status,create_at,updated_at) VALUES (?, ?, ?, ?, ?,?,?,?)`;
+    const { room_number, room_type, price_per_night, description, status} = req.body;
+    const SQL_QUERY = `INSERT INTO rooms (room_number, room_type, price_per_night, description, status) VALUES (?, ?, ?, ?, ?)`;
 
-    DB.query(SQL_QUERY, [room_number, room_type, price_per_night, description, image_url,status,create_at,updated_at], (err, results) => {
+    DB.query(SQL_QUERY, [room_number, room_type, price_per_night, description,status], (err, results) => {
         if (err) {
             console.error("Error adding room:", err);
             res.status(500).send('Error adding room');

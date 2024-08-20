@@ -248,6 +248,9 @@ body {
   color: #FFFFFF; /* Color oscuro para el texto del cuerpo */
   padding: 10px;
 }
+ tr th{
+  padding: 10px;
+}
 
 /* Estilos condicionales basados en el estado de la habitación */
 .table-custom .status-available {
