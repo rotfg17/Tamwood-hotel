@@ -33,7 +33,7 @@ class UserController{
                 $response = $this->notFoundResponse();
                 break;
         }
-        print_r($response);
+        return $response;
         // header($response['status_code_header']);
         // if ($response['body']) {
         //     echo $response['body'];
@@ -46,14 +46,14 @@ class UserController{
             $currPage = isset($_GET['currentPage'])? $_GET['currentPage'] : 1;
             $searchString = isset($_GET['searchString'])? $_GET['searchString'] : ""; 
             $searchType = isset($_GET['searchType'])? $_GET['searchType'] : "";
-            echo isset($input);
+
             $userMapper = new UserMapper($this->db);
 
             $user_count = $userMapper->getUserTotalCount();
             $pageObject = new Paging($currPage, $user_count, 20);
-            $result = $userMapper->getUserList($pageObject, $currPage, $searchString, $searchType,  20);
+            $result = $userMapper->getUserList($pageObject, $searchString, $searchType);
             
-            return $this->jsonResponse(200, $result);
+            print_r($this->jsonResponse(200, $result));
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -63,7 +63,7 @@ class UserController{
         try {
             $userMapper = new UserMapper($this->db);
             $result = $userMapper->getUsers();
-            return $this->jsonResponse(200, $result);
+            print_r($this->jsonResponse(200, $result));
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -99,6 +99,7 @@ class UserController{
             $user = new User();
             $user -> setName($input['name']);
             $user-> setEmail($input['email']);
+            $user-> setId($input['uid']);
 
             if ($userMapper -> updateUser($user)) {
                 return $this->jsonResponse(201, ['message' => 'User Updated']);
