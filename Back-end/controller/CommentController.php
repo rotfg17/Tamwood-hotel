@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/../model/User.php';
-require_once __DIR__ . '/../mapper/UserMapper.php';
+require_once __DIR__ . '/../model/Comment.php';
+require_once __DIR__ . '/../mapper/CommentMapper.php';
 require_once __DIR__ . '/../Utils/Paging.php';
 
-class UserController{
+class CommentController{
     private $db;
     private $requestMethod;
 

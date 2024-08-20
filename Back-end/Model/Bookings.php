@@ -10,7 +10,7 @@ class Booking {
     private $created_at;
 
     // Constructor
-    public function __construct($booking_id, $user_id, $room_id, $check_in_date, $check_out_date, $total_price, $status, $created_at) {
+    public function __construct($booking_id=null, $user_id=null, $room_id=null, $check_in_date=null, $check_out_date=null, $total_price=null, $status=null, $created_at=null) {
         $this->booking_id = $booking_id;
         $this->user_id = $user_id;
         $this->room_id = $room_id;
@@ -79,5 +79,6 @@ class Booking {
         $this->status = $status;
     }
 }
+
 
 ?>

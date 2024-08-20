@@ -17,16 +17,15 @@ class UserMapper{
             $stmt->execute();
     
             $count = $stmt -> fetch(PDO::FETCH_ASSOC);
-
             return $count["count"];
         } catch (PDOException $e) {
             error_log("Error in getUsers: " . $e->getMessage());
             return 0;
         }
     }
-    public function getUserList(Paging $paging, int $page_number,  string $searchString="", string $searchType ="", int $records_per_page = 20) {
-        // verify page number (set init 1)
-        $page_number = $paging -> getTotalPages();
+    public function getUserList(Paging $paging, string $searchString="", string $searchType ="") {
+        // Page per row
+        $records_per_page = $paging -> getItemsPerPage();
         // cal OFFSET 
         $offset = $paging -> getOffset();
 
@@ -40,7 +39,7 @@ class UserMapper{
             $query .= " WHERE role LIKE '%".$searchString."%'";
             $query .= " ORDER BY user_id DESC 
                         LIMIT :limit OFFSET :offset";
-        echo $query;
+        
         // biding <paramete></paramete>r
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':limit', $records_per_page, PDO::PARAM_INT);
@@ -144,6 +143,9 @@ class UserMapper{
             }
             return false;
     }
+
+    //회원가입
+    //insert
 }
 
 ?>
