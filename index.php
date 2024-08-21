@@ -166,6 +166,10 @@ function route($method, $path) {
 try {
     header("Access-Control-Allow-Origin: *");
     
+    // Depuración: Imprimir el session-key recibido
+    $receivedSessionKey = $_SERVER['HTTP_SESSION_KEY'] ?? 'No session key received';
+    error_log("Received session-key: " . $receivedSessionKey);
+
     $session = new Session();
     $sessionStatus = $session->getSession();
 
@@ -179,4 +183,5 @@ try {
     header("HTTP/1.1 500 Internal Server Error");
     echo json_encode(['error' => $error->getMessage()]);
 }
+
 ?>

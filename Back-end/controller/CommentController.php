@@ -12,6 +12,13 @@ class CommentController
   {
     $this->db = $db;
     $this->requestMethod = $requestMethod;
+
+    $session = new Session();
+    $sessionStatus = $session->getSession();
+
+    if ($sessionStatus !== 'active') {
+        throw new Exception("Session is not active", 401);
+    }
   }
 
   public function processRequest($param)

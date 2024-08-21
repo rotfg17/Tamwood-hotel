@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import '../App'; // Asegúrate de importar tu archivo CSS
+import '../App';
 
 const Services = () => {
     const [services, setServices] = useState([]);
@@ -9,12 +9,12 @@ const Services = () => {
         try {
             const response = await fetch('http://localhost/Tamwood-hotel/api/services');
             if (!response.ok) {
-                throw new Error('Error al obtener los datos del servidor');
+                throw new Error('Error getting data from server');
             }
             const data = await response.json();
             setServices(data);
         } catch (error) {
-            console.error('Error al obtener los servicios:', error);
+            console.error('Error getting services:', error);
         }
     };
 

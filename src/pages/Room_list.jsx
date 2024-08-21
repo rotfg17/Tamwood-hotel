@@ -7,29 +7,29 @@ const RoomList = () => {
     const [error, setError] = useState(null);
 
     // Declarar la sessionKey
-    const sessionKey = 'tamwood-hotel:)';
+    // const sessionKey = 'tamwood-hotel:)';
 
     const fetchRooms = async () => {
         try {
             const response = await fetch('http://localhost/Tamwood-hotel/api/room-type', {
-                method: 'GET',
-                headers: {
-                    'session-key': sessionKey,  // Agrega la session-key en los encabezados
-                    'Content-Type': 'application/json',
-                },
+                // method: 'GET',
+                // headers: {
+                //     'session-key': sessionKey,  // Agrega la session-key en los encabezados
+                //     'Content-Type': 'application/json',
+                // },
             });
 
             if (!response.ok) {
                 if (response.status === 401) {
                     throw new Error('Session expired, please login again.');
                 }
-                throw new Error('Error al obtener los datos del servidor');
+                throw new Error('Error getting data from server');
             }
 
             const data = await response.json();
             setRooms(data);
         } catch (error) {
-            console.error('Error al obtener las habitaciones:', error);
+            console.error('Error getting rooms:', error);
             setError(error.message || 'Failed to load rooms');
         }
     };

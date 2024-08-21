@@ -15,7 +15,7 @@ const RoomForm = () => {
   });
 
   // Declarar la sessionKey
-  const sessionKey = 'tamwood-hotel:)';
+  // const sessionKey = 'tamwood-hotel:)';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,36 +30,41 @@ const RoomForm = () => {
     e.preventDefault();
     const data = new FormData();
 
-    // Agregar todos los campos al FormData
     for (const key in formData) {
-      data.append(key, formData[key]);
+        data.append(key, formData[key]);
     }
 
     try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/create-room', data, {
-        headers: {
-          'session-key': sessionKey,  // Agrega la session-key aquí
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      setSuccessMessage("Room registered successfully!");
-      setError(null);
+      // console.log(sessionKey);
+        const response = await axios.post('http://localhost/Tamwood-hotel/api/create-room', data, {
+        //   headers: {
+        //     'session-key': sessionKey,  // Verifica que la session-key es la correcta
+        //     'Content-Type': 'multipart/form-data'
+        // }
+        });
 
-      // Limpiar la información del formulario
-      setFormData({
-        room_number: "",
-        room_type: "",
-        price_per_night: "",
-        description: "",
-        status: "",
-        image: null,
-      });
+        if (response.status === 200) {
+            setSuccessMessage("Room registered successfully!");
+            setError(null);
+            setFormData({
+                room_number: "",
+                room_type: "",
+                price_per_night: "",
+                description: "",
+                status: "",
+                image: null,
+            });
+        } else {
+            setError('Failed to register room. Please try again.');
+        }
 
     } catch (error) {
-      setError(error.response?.data?.error || 'Error adding room');
-      setSuccessMessage('');
+        setError(error.response?.data?.error || 'Error adding room');
+        setSuccessMessage('');
     }
-  };
+};
+
+
 
   return (
     <>

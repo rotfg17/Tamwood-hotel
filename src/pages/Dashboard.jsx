@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faWallet, faBed, faCalendarCheck, faConciergeBell, faComments, faFileAlt, faClock, faBars, faCog, faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import '../App.css'; // Asegúrate de importar el archivo CSS correcto
+import '../App.css'; //Make sure you import the correct CSS file
 
 const Dashboard = () => {
   const [isSettingsMenuVisible, setSettingsMenuVisible] = useState(false);
@@ -16,11 +16,11 @@ const Dashboard = () => {
 
     // Adjust top-bar width and position based on sidebar state
     if (isCollapsed) {
-      topBar.style.left = '100px'; // Ajustar según el ancho del sidebar colapsado
-      topBar.style.width = 'calc(100% - 120px)'; // Ajustar el ancho para que se ajuste
+      topBar.style.left = '100px'; // Adjust to width of collapsed sidebar
+      topBar.style.width = 'calc(100% - 120px)'; // Adjust width to fit
     } else {
-      topBar.style.left = '230px'; // Ancho original del sidebar
-      topBar.style.width = 'calc(100% - 250px)'; // Ajustar el ancho para que se ajuste
+      topBar.style.left = '230px'; // Original width of the sidebar
+      topBar.style.width = 'calc(100% - 250px)'; // Adjust width to fit
     }
   };
 

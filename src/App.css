@@ -26,11 +26,11 @@ body {
   box-shadow: rgba(0, 0, 0, 0.85) 0px 1px;
   position: fixed;
   top: 0;
-  left: 230px; /* Ajustar según el ancho del sidebar */
-  width: calc(100% - 250px); /* Ajustar según el ancho del sidebar */
-  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+  left: 230px; /* Adjust to sidebar width */
+  width: calc(100% - 250px); 
+  z-index: 1000; /* Make sure it is above other elements */
   transition: width 0.3s ease, left 0.3s ease;
-  justify-content: space-between; /* Distribuye el espacio entre los elementos */
+  justify-content: space-between; /* Distribute space between elements */
 }
 
 .hamburger {
@@ -42,34 +42,32 @@ body {
 }
 
 .dashboard-title {
-  margin: 0; /* Ajustar espacio alrededor del título */
+  margin: 0; /* Adjust space around title */
   font-size: 20px;
   color: #fff;
-  flex-grow: 1; /* Permite que el título use el espacio disponible entre los íconos */
+  flex-grow: 1; /* Allows the title to use the available space between the icons */
 
 }
 
 .search-bar {
-  margin: 0 20px; /* Espaciado a los lados */
-  padding: 5px 10px; /* Ajustar el relleno */
+  margin: 0 20px; /* Spacing on the sides */
+  padding: 5px 10px; /* Adjust padding */
   border: 1px solid #ccc;
   border-radius: 4px;
   background: #fff;
-  max-width: 200px; /* Tamaño más pequeño */
+  max-width: 200px;
 }
 
-/* Estilos para el menú de configuración */
-
-
+/* Styles for the settings menu */
 .settings-menu {
   position: absolute;
-  top: 100%; /* Justo debajo del ícono */
+  top: 100%; /* Just below the icon */
   right: 0;
   background: #fff;
   color: #333;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 8px;
   border-radius: 4px;
-  z-index: 1001; /* Asegúrate de que esté sobre otros elementos */
+  z-index: 1001; /* Make sure it is on top of other elements */
   display: flex;
   flex-direction: column;
   width: 200px;
@@ -100,24 +98,24 @@ body {
   background: #f4f4f4;
 }
 
-/* Estilos para los iconos de notificación y perfil */
+/* Styles for notification and profile icons */
 .notifications, .settings, .profile {
   position: relative;
   cursor: pointer;
-  margin-right: 15px; /* Añade espacio entre los íconos */
+  margin-right: 15px; /* Add space between icons */
   font-size: 20px;
   
 }
 
 .notifications-menu, .settings-menu, .profile-menu {
   position: absolute;
-  top: 100%; /* Justo debajo del ícono */
+  top: 100%;
   right: 0;
   background: #fff;
   color: #333;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 8px;
   border-radius: 4px;
-  z-index: 1001; /* Asegúrate de que esté sobre otros elementos */
+  z-index: 1001; 
   display: flex;
   flex-direction: column;
   width: 200px;
@@ -221,48 +219,48 @@ body {
   margin-left: 100px; /* Adjust based on collapsed sidebar width */
 }
 
-/* styles.css o en tu archivo de estilos */
+/* styles.css or in your styles file */
 .custom-select {
-  background-color: #f0f0f0; /* Color de fondo */
-  color: #333; /* Color del texto */
-  border: 1px solid #ccc; /* Color del borde */
-  padding: 10px; /* Espaciado interno */
-  border-radius: 5px; /* Esquinas redondeadas */
+  background-color: #f0f0f0; /* Background color */
+  color: #333; 
+  border: 1px solid #ccc;
+  padding: 10px; 
+  border-radius: 5px; 
 }
 
 .custom-select option {
-  background-color: #fff; /* Color de fondo de las opciones */
-  color: #000; /* Color del texto de las opciones */
+  background-color: #fff; /* Background color of the options */
+  color: #000;
 }
 
 /* styles for tables*/
 
 
 .table-custom thead th {
-  background-color: #02508a; /* Color de fondo oscuro para los encabezados */
-  color: #ffffff; /* Texto blanco para contraste */
-  border-color: #dee2e6; /* Borde más claro para los encabezados */
+  background-color: #02508a; /* Dark background color for headers */
+  color: #ffffff; 
+  border-color: #dee2e6; 
 }
 
 .table-custom tbody td {
-  color: #FFFFFF; /* Color oscuro para el texto del cuerpo */
+  color: #FFFFFF; 
   padding: 10px;
 }
  tr th{
   padding: 10px;
 }
 
-/* Estilos condicionales basados en el estado de la habitación */
+/* Conditional styles based on room state */
 .table-custom .status-available {
-  color: #28a745; /* Verde para habitaciones disponibles */
+  color: #28a745; 
 }
 
 .table-custom .status-unavailable {
-  color: #dc3545; /* Rojo para habitaciones no disponibles */
+  color: #dc3545; /* Red for unavailable rooms */
 }
 
 .table-custom .status-maintenance {
-  color: #ffc107; /* Amarillo para mantenimiento */
+  color: #ffc107;
 }
 
 
