@@ -105,16 +105,16 @@ class UserController{
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
                     //update locked number
                     $userMapper -> updateIsLocked($user->getEmail());
-
                     //update Expire time
                     switch ($userMapper -> isLocked($user ->getEmail())) {
                         case 1:
                             $userMapper -> updateLockedExpire(4,$user->getEmail());
+                            break;
                         case 2:
                             $userMapper -> updateLockedExpire(10,$user->getEmail());
-                        
-                        return print_r($this->jsonResponse(500, ['fail'=> "isLocked"]));
+                            break;
                     }
+                    return print_r($this->jsonResponse(500, ['fail'=> "isLocked"]));
                 }
                 $userMapper -> updateFailedLoginAttempts($user -> getEmail());
                 return print_r($this->jsonResponse(500, ["error" => "User verify fail"]));

@@ -195,7 +195,7 @@ class UserMapper{
                     WHERE 
                         email =:email
                         ";
-        echo $query;
+
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':email', $email);
