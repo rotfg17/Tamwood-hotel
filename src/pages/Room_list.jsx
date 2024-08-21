@@ -18,14 +18,19 @@ const RoomList = () => {
                     'Content-Type': 'application/json',
                 },
             });
+
             if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Session expired, please login again.');
+                }
                 throw new Error('Error al obtener los datos del servidor');
             }
+
             const data = await response.json();
             setRooms(data);
         } catch (error) {
             console.error('Error al obtener las habitaciones:', error);
-            setError('Failed to load rooms');
+            setError(error.message || 'Failed to load rooms');
         }
     };
 
