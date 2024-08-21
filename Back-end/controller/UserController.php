@@ -10,13 +10,6 @@ class UserController{
     public function __construct($db, $requestMethod) {
         $this->db = $db;
         $this->requestMethod = $requestMethod;
-
-        $session = new Session();
-        $sessionStatus = $session->getSession();
-
-        if ($sessionStatus !== 'active') {
-            throw new Exception("Session is not active", 401);
-        }
     }
 
     public function processRequest($param) {
@@ -88,8 +81,8 @@ class UserController{
             //Setting User Class
             $user = new User();
 
-            $user-> setEmail($input['email']);
-            $user -> setPasswordHash($input['password']); // password hash
+            $user->setEmail($input['email']);
+            $user->setPasswordHash($input['password']); // password hash
 
             //is locked
             $isLockedCount = $userMapper -> isLocked($user ->getEmail());
@@ -104,11 +97,10 @@ class UserController{
 
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
-                echo "login";
-
                 //Set Session
+                $_SESSION['user_email'] = serialize($user->getEmail());
 
-                return print_r($this->jsonResponse(200, ['success'=> true]));
+                return $this->jsonResponse(200, ['result'=> 'success']);
             }else {
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
                     //update locked number

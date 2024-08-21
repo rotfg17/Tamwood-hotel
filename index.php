@@ -166,14 +166,17 @@ function route($method, $path) {
 try {
     header("Access-Control-Allow-Origin: *");
     
-    // Depuración: Imprimir el session-key recibido
-    $receivedSessionKey = $_SERVER['HTTP_SESSION_KEY'] ?? 'No session key received';
-    error_log("Received session-key: " . $receivedSessionKey);
-
     $session = new Session();
     $sessionStatus = $session->getSession();
 
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+
+    $data = json_decode($response);
+    $result = $data->result;
+
+    if ($result === 'success') {
+        $sessionStatus = $session->startSession();
+    }
 
     echo json_encode([
         'sessionStatus' => $sessionStatus,
