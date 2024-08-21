@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../model/Bookings.php';
 require_once __DIR__ . '/../Utils/Paging.php';
-class BookingMapper{
+class AuditMapper{
     private $conn;
     private $table_name = 'bookings';
 
