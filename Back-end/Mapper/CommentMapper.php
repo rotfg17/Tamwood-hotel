@@ -16,9 +16,9 @@ class CommentMapper{
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             
-            $count = $stmt -> fetch(PDO::FETCH_ASSOC);
+            $count = $stmt->fetchColumn();
 
-            return $count["count"];
+            return $count;
         } catch (PDOException $e) {
             error_log("Error in getComments: " . $e->getMessage());
             return 0;
@@ -96,11 +96,10 @@ class CommentMapper{
                                                         ) 
                                                 values (
                                                             :user_id, 
-                                                            'room_id',
+                                                            :room_id,
                                                             :comment_text,
                                                             :rating
                                                         )";
-
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':user_id', $comment->getUserId());
@@ -132,17 +131,26 @@ class CommentMapper{
         }
         return false;
     }
+    public function getCommentbyId(int $comment_id) {
+        $query = "select COUNT(*) AS count FROM ". $this -> table_name . 
+                    " WHERE comment_id = :id";
+                    
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id",$comment_id);
+        $stmt->execute();
 
+        $count = $stmt->fetchColumn();
+        
+        return $count;
+    }
     public function deleteComment(int $comment_id) {
         $query = "DELETE FROM " . $this -> table_name . "
                     WHERE comment_id = :id
                 ";
         $stmt = $this->conn->prepare($query);
-
         $stmt->bindParam(":id",$comment_id);
 
-        $stmt->execute();
-        if ($stmt->execute()) {
+        if ($stmt->execute() < 0) {
             return true;
             }
             return false;

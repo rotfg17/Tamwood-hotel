@@ -8,7 +8,7 @@ class Comment {
     private $created_at;
 
     // Constructor
-    public function __construct($comment_id, $user_id, $room_id, $comment_text, $rating, $created_at) {
+    public function __construct(int $comment_id=0, int $user_id=0, int $room_id=0, string $comment_text=null, int $rating=0, string $created_at=null) {
         $this->comment_id = $comment_id;
         $this->user_id = $user_id;
         $this->room_id = $room_id;

@@ -3,6 +3,7 @@
 require_once './Back-end/config/Database.php';
 require_once './Back-end/controller/UserController.php';
 require_once './Back-end/controller/BookingController.php';
+require_once './Back-end/controller/CommentController.php';
 require_once './Back-end/controller/RoomController.php';
 require_once './Back-end/controller/TransactionController.php';
 require_once './Back-end/controller/ServiceController.php';
@@ -15,6 +16,15 @@ function route($method, $path) {
 
     if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
         echo "index.php";
+    } 
+    //Login & Register 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/register') {
+        $controller = new UserController($db, $method);
+        return json_encode($controller->processRequest('add-user'));
+    } 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/login') {
+        $controller = new UserController($db, $method);
+        return json_encode($controller->processRequest('login'));
     } 
     //UserController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
@@ -31,7 +41,6 @@ function route($method, $path) {
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-user') {
         $controller = new UserController($db, $method);
         return json_encode($controller->processRequest('update-user'));
-
     }
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-user') {
         $controller = new UserController($db, $method);
@@ -53,6 +62,26 @@ function route($method, $path) {
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-booking') {
         $controller = new BookingController($db, $method);
         return json_encode($controller->processRequest('delete-booking'));
+    }
+    //Comment
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comment-list') {
+        $controller = new CommentController($db, $method);
+        return json_encode($controller->processRequest('comment-list'));
+    } 
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comments') {
+        $controller = new CommentController($db, $method);
+        return json_encode($controller->processRequest('comments'));
+    } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-comment') {
+        $controller = new CommentController($db, $method);
+        return  json_encode($controller->processRequest('add-comment'));
+    } 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-comment') {
+        $controller = new CommentController($db, $method);
+        return json_encode($controller->processRequest('update-comment'));
+    }
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-comment') {
+        $controller = new CommentController($db, $method);
+        return json_encode($controller->processRequest('delete-comment'));
     }
     //RoomController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/room-type') {

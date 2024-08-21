@@ -44,9 +44,8 @@ class BookingController{
 
             $booking_count = $bookingMapper->getBookingTotalCount();
             $pageObject = new Paging($currPage, $booking_count, 20);
-            $result = $bookingMapper->getBookingList($pageObject, $currPage, $searchString, $searchType,  20);
-            print_r($result);
-            return $this->jsonResponse(200, $result);
+            $result = $bookingMapper->getBookingList($pageObject, $searchString, $searchType);
+            return print_r($this->jsonResponse(200, $result));
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -57,7 +56,7 @@ class BookingController{
             $bookingMapper = new BookingMapper($this->db);
             $result = $bookingMapper->getBookings();
             print_r($result);
-            return $this->jsonResponse(200, $result);
+            return print_r($this->jsonResponse(200, $result));
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -75,7 +74,7 @@ class BookingController{
             $booking -> setStatus($input['status']);
 
             if ($bookingMapper -> updateBookingStatus($booking)) {
-                print_r($this->jsonResponse(201, ['message' => 'User Updated']));
+                return print_r($this->jsonResponse(201, ['message' => 'User Updated']));
             } else {
                 throw new Exception("Failed to update user.");
             }
@@ -91,7 +90,7 @@ class BookingController{
             $booking_id = $_POST["bid"];
 
             if ($bookingMapper -> deleteBooking($booking_id)) {
-                print_r($this->jsonResponse(201, ['message' => 'User Updated']));
+                return print_r($this->jsonResponse(201, ['message' => 'User Updated']));
             } else {
                 throw new Exception("Failed to delete user.");
             }
