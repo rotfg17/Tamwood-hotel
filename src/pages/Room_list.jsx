@@ -1,21 +1,30 @@
 import { useEffect, useState } from 'react';
-// Cambia la importación a exportaciones nombradas
+// Importaciones nombradas desde 'date-fns'
 import { format, isValid } from 'date-fns';
 
 const RoomList = () => {
     const [rooms, setRooms] = useState([]);
     const [error, setError] = useState(null);
 
+    // Declarar la sessionKey
+    const sessionKey = 'tamwood-hotel:)';
+
     const fetchRooms = async () => {
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/room-type');
+            const response = await fetch('http://localhost/Tamwood-hotel/api/room-type', {
+                method: 'GET',
+                headers: {
+                    'session-key': sessionKey,  // Agrega la session-key en los encabezados
+                    'Content-Type': 'application/json',
+                },
+            });
             if (!response.ok) {
                 throw new Error('Error al obtener los datos del servidor');
             }
             const data = await response.json();
             setRooms(data);
         } catch (error) {
-            console.error('Error al obtener las rooms:', error);
+            console.error('Error al obtener las habitaciones:', error);
             setError('Failed to load rooms');
         }
     };
@@ -45,25 +54,22 @@ const RoomList = () => {
                             <td colSpan="6">No rooms available</td>
                         </tr>
                     ) : (
-                        rooms.map((room, index) => {
-                            console.log("Room Status:", room.status); // Imprime el estado en la consola
-                            return (
-                                <tr key={`${room.room_number}-${index}`}>
-                                    <td>{room.room_number}</td>
-                                    <td>{room.room_type}</td>
-                                    <td>${room.price_per_night}</td>
-                                    <td>{room.description}</td>
-                                    <td className={`status-${room.status.toLowerCase()}`}>
-                                        {room.status}
-                                    </td>
-                                    <td>
-                                        {isValid(new Date(room.created_at))
-                                            ? format(new Date(room.created_at), "PPP")
-                                            : "Invalid Date"}
-                                    </td>
-                                </tr>
-                            );
-                        })
+                        rooms.map((room, index) => (
+                            <tr key={`${room.room_number}-${index}`}>
+                                <td>{room.room_number}</td>
+                                <td>{room.room_type}</td>
+                                <td>${room.price_per_night}</td>
+                                <td>{room.description}</td>
+                                <td className={`status-${room.status.toLowerCase()}`}>
+                                    {room.status}
+                                </td>
+                                <td>
+                                    {isValid(new Date(room.created_at))
+                                        ? format(new Date(room.created_at), "PPP")
+                                        : "Invalid Date"}
+                                </td>
+                            </tr>
+                        ))
                     )}
                 </tbody>
             </table> 
