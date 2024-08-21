@@ -30,6 +30,7 @@ class BookingController{
                 $response = $this->notFoundResponse();
                 break;
         }
+        
         return $response;
     }
 

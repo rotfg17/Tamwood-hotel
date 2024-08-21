@@ -36,6 +36,7 @@ class UserController{
                 $response = $this->notFoundResponse();
                 break;
         }
+        
         return $response;
         // header($response['status_code_header']);
         // if ($response['body']) {
