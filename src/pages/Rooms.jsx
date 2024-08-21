@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { format } from 'date-fns';
 import axios from 'axios';
 
 const RoomForm = () => {
@@ -14,6 +13,9 @@ const RoomForm = () => {
     status: "",
     image: null, 
   });
+
+  // Declarar la sessionKey
+  const sessionKey = 'tamwood-hotel:)';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,11 +36,16 @@ const RoomForm = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/create-room', data);
+      const response = await axios.post('http://localhost/Tamwood-hotel/api/create-room', data, {
+        headers: {
+          'session-key': sessionKey,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       setSuccessMessage("Room registered successfully!");
       setError(null);
 
-      // clean the form information
+      // Limpiar la información del formulario
       setFormData({
         room_number: "",
         room_type: "",
