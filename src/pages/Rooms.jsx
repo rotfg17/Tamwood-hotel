@@ -38,7 +38,7 @@ const RoomForm = () => {
     try {
       const response = await axios.post('http://localhost/Tamwood-hotel/api/create-room', data, {
         headers: {
-          'session-key': sessionKey,
+          'session-key': sessionKey,  // Agrega la session-key aquí
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -56,7 +56,7 @@ const RoomForm = () => {
       });
 
     } catch (error) {
-      setError('Error adding room');
+      setError(error.response?.data?.error || 'Error adding room');
       setSuccessMessage('');
     }
   };
