@@ -9,6 +9,7 @@ import Bookings from './pages/Bookings';
 import Services from './pages/Services';
 import Comments from './pages/Comments';
 import Audit_Logs from './pages/Audit_Logs';
+import RoomList from './pages/Room_list';
 import Sessions from './pages/Sessions';
 import NoPage from './pages/NoPage';
 import './App.css';
@@ -29,6 +30,7 @@ function App() {
           <Route path="users" element={<Users />} />
           <Route path="wallet" element={<Wallet />} />
           <Route path="rooms" element={<Rooms />} />
+          <Route path="roomList" element={<RoomList />} />
           <Route path="bookings" element={<Bookings />} />
           <Route path="services" element={<Services />} />
           <Route path="comments" element={<Comments />} />

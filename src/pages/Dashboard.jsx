@@ -90,6 +90,7 @@ const Dashboard = () => {
             <li><Link to="users"><FontAwesomeIcon icon={faUser} /> <span className="menu-text">Users</span></Link></li>
             <li><Link to="wallet"><FontAwesomeIcon icon={faWallet} /> <span className="menu-text">Wallet</span></Link></li>
             <li><Link to="rooms"><FontAwesomeIcon icon={faBed} /> <span className="menu-text">Rooms</span></Link></li>
+            <li><Link to="roomList"><FontAwesomeIcon icon={faBed} /> <span className="menu-text">Rooms List</span></Link></li>
             <li><Link to="bookings"><FontAwesomeIcon icon={faCalendarCheck} /> <span className="menu-text">Bookings</span></Link></li>
             <li><Link to="services"><FontAwesomeIcon icon={faConciergeBell} /> <span className="menu-text">Services</span></Link></li>
             <li><Link to="comments"><FontAwesomeIcon icon={faComments} /> <span className="menu-text">Comments</span></Link></li>
