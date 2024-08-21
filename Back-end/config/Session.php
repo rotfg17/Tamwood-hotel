@@ -10,6 +10,13 @@ class Session {
         return 'active';
     }
 
+    public function deleteSession() {
+        session_unset();
+        session_destroy();
+
+        return 'expired';
+    }
+
     public function getSession() {
         session_start();
 
@@ -22,9 +29,7 @@ class Session {
                     $sessionStatus = 'active';
                     $_SESSION['timeout'] = time() + 1000;
                 } else {
-                    $sessionStatus = 'expired';
-                    session_unset();
-                    session_destroy();
+                    $sessionStatus = $this->deleteSession();
                 }
             } else {
                 $sessionStatus = $this->startSession();
