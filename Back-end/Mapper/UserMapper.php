@@ -118,15 +118,13 @@ class UserMapper{
     public function updateUser(User $user){
         $query = "UPDATE " . $this->table_name . " 
                         SET 
-                            username = :name, 
-                            email = :email
+                            username = :name
                         WHERE 
                             user_id = :id
                             ";
         $stmt = $this->conn->prepare($query);
         
         $stmt->bindParam(':name', $user->getName());
-        $stmt->bindParam(':email', $user->getEmail());
         $stmt->bindParam(':id', $user->getId());
         
         if ($stmt->execute()) {
@@ -213,7 +211,6 @@ class UserMapper{
                     WHERE 
                         email =:email
                         ";
-        echo $query;
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':email', $email);
@@ -252,6 +249,23 @@ class UserMapper{
         } else {
             return false;
         }
+    }
+
+    //
+    public function initLocked(int $user_id) {
+        $query = "UPDATE ". $this->table_name ."
+                    SET is_locked = 0,
+                        failed_login_attempts = 0
+                    WHERE user_id = :user_id";
+    
+        $stmt = $this->conn->prepare($query);
+    
+        $stmt->bindParam(":user_id", $user_id);
+    
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
     }
 }
 

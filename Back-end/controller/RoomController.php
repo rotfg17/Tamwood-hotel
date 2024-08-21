@@ -26,6 +26,9 @@ class RoomController {
             case 'rooms':
                 $response = $this->getRooms();
                 break;
+            case 'available-room':
+                $response = $this->getAvailableRoom();
+                break;
             case 'create-room':
                 $response = $this->createRoom();
                 break;
@@ -66,6 +69,21 @@ class RoomController {
             $status = isset($_GET['status']) ? $_GET['status'] : null;
 
             $result = $roomMapper->getRooms($status);
+
+            return $this->jsonResponse(200, $result);
+        } catch (PDOException $e) {
+            error_log("Error getting Rooms: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+        }
+    }
+
+    public function getAvailableRoom() {
+        try {
+            $roomMapper = new RoomMapper($this->db);
+            $checkInDate = isset($_GET['checkInDate']) ? $_GET['checkInDate'] : null;
+            $checkOutDate = isset($_GET['checkOutDate']) ? $_GET['checkInDate'] : null;
+
+            $result = $roomMapper->getAvailableRooms($checkInDate, $checkOutDate);
 
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {

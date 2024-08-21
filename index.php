@@ -27,6 +27,10 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('login');
     } 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/init-locked') {
+        $controller = new UserController($db, $method);
+        return $controller->processRequest('init-locked');
+    } 
     //UserController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
         $controller = new UserController($db, $method);
@@ -56,7 +60,15 @@ function route($method, $path) {
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/bookings') {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('bookings');
+    }
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-info') {
+        $controller = new BookingController($db, $method);
+        return $controller->processRequest('booking-info');
     } 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-booking') {
+        $controller = new BookingController($db, $method);
+        return $controller->processRequest('create-booking');
+    }
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-booking-status') {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('update-booking-status');
@@ -95,6 +107,12 @@ function route($method, $path) {
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/rooms') {
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('rooms');
+
+        return $request;
+    }
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/available-room') {
+        $controller = new RoomController($db, $method);
+        $request = $controller->processRequest('available-room');
 
         return $request;
     }

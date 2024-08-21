@@ -56,8 +56,33 @@ class RoomMapper {
             return $e->getMessage();
         }
     }
+    public function getAvailableRooms($selectedCheckInDate, $selectedCheckOutDate) {
+        try{
+            $query = "SELECT * FROM " . $this->table_name .
+                        " WHERE room_id IN(
+                            SELECT room_id FROM `bookings` 
+                            WHERE NOT (check_in_date <= :selectedCheckInDate 
+                            AND check_out_date >= :selectedCheckOutDate )
+                        ) AND status = 'available'";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':selectedCheckInDate', $selectedCheckInDate );
+            $stmt->bindParam(':selectedCheckOutDate', $selectedCheckOutDate );
 
-    public function createRoom(Room $room) {
+            $stmt->execute();
+            
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $rooms[] = $row;
+            }
+
+            return $rooms;
+        } catch (PDOException $e) {
+            error_log("Error in getAvailableRooms(): " . $e->getMessage());
+            return $e->getMessage();
+        }
+    }
+
+    public function createRoom(Room $room):int | bool {
         try {         
             $query = "INSERT INTO " . $this->table_name . " 
                 (room_number, room_type, price_per_night, description, image_url, status) 
@@ -170,5 +195,24 @@ class RoomMapper {
             return $e->getMessage();
         }
     }
+
+    public function getRoomPrice(int $roomId, int $interval) {
+        try {
+            $query = "SELECT price_per_night * :interval FROM " . $this->table_name . "
+                    WHERE room_id =:room_id";
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(":interval", $interval);
+            $stmt->bindParam(":room_id", $roomId);
+
+            $stmt->execute();
+    
+            return $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error in getRoomTypes: " . $e->getMessage());
+            return $e->getMessage();
+        }
+    }
+    
 }
 ?>

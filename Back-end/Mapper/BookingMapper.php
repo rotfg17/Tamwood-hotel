@@ -67,7 +67,7 @@ class BookingMapper{
     }
 
     public function getBookings() {
-        try {//need paging util
+        try {
             $query = "SELECT * 
                         FROM " . $this->table_name. 
                         " ORDER BY booking_id DESC";
@@ -85,10 +85,66 @@ class BookingMapper{
         }
     }
     
+    public function getBookingInfo(int $bookingId) {
+        try {
+            $query = "SELECT * 
+                        FROM " . $this->table_name. 
+                        " WHERE booking_id = :bookingId";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":bookingId", $bookingId);
+
+            $stmt->execute();
     
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error in getBookings: " . $e->getMessage());
+            return [];
+        }
+    }
 
     // create booking with service and user
+    public function createBooking(Booking $booking) {
+        $query = "INSERT INTO ". $this->table_name. "
+                (`user_id`, `room_id`, `check_in_date`, `check_out_date`, `total_price`, `status`) 
+                VALUES (:uid, :rid, :checkIn, :checkOut, :totalPrice, 'pending')";
+        $stmt = $this->conn->prepare($query);
 
+        $stmt->bindParam(":uid", $booking->getUserId());
+        $stmt->bindParam(":rid", $booking->getRoomId());
+        $stmt->bindParam(":checkIn", $booking->getCheckInDate());
+        $stmt->bindParam(":checkOut", $booking->getCheckOutDate());
+        $stmt->bindParam(":totalPrice", $booking->getTotalPrice());
+
+        if ($stmt->execute()) {
+            return $this->conn->lastInsertId(); // get Last booking idx
+        }
+
+        return false;
+
+    }
+    //create booking-service with createBooking
+    public function createBookingService(array $serviceArr) {
+        $query = "INSERT INTO Booking_Services 
+                    (`booking_id`, `service_id`, `quantity`, `total_price`) 
+                    VALUES (:bookingId, :serviceId, :quantity, :totalPrice)";
+    
+        for($idx=0; $idx < count($serviceArr); $idx++) {
+            $service = $serviceArr[$idx];
+
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(':bookingId', $service->getBookingId());
+            $stmt->bindParam(':serviceId', $service->getServiceId());
+            $stmt->bindParam(':quantity', $service->getQuantity());
+            $stmt->bindParam(':totalPrice', $service->getTotalPrice());
+            if (!$stmt->execute()) {
+                return false;
+            }
+        }
+        return true;
+
+    }
     public function updateBookingStatus(Booking $booking){
         $query = "UPDATE " . $this->table_name . " 
                         SET 

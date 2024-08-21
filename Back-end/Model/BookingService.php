@@ -7,8 +7,7 @@ class BookingService {
     private $total_price;
 
     // Constructor
-    public function __construct($booking_service_id, $booking_id, $service_id, $quantity, $total_price) {
-        $this->booking_service_id = $booking_service_id;
+    public function __construct($booking_id, $service_id, $quantity, $total_price) {
         $this->booking_id = $booking_id;
         $this->service_id = $service_id;
         $this->quantity = $quantity;

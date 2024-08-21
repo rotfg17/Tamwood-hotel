@@ -89,14 +89,6 @@ class Room {
         $this->status = $status;
     }
 
-    public function setCreatedAt() {
-        $this->created_at = $created_at;
-    }
-
-    public function setUpdatedAt() {
-        $this->updated_at = $updated_at;
-    }
-
     function uploadFile(array $file): string {
         global $uploadFileDir;
 

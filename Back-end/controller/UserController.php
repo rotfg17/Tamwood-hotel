@@ -39,6 +39,9 @@ class UserController{
             case 'login':
                 $response = $this->login();
                 break;
+            case 'init-locked':
+                $response = $this->initLocked();
+                break;
             default:
                 $response = $this->notFoundResponse();
                 break;
@@ -64,7 +67,7 @@ class UserController{
             $pageObject = new Paging($currPage, $user_count, 20);
             $result = $userMapper->getUserList($pageObject, $searchString, $searchType);
             
-            print_r($this->jsonResponse(200, $result));
+            return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -74,7 +77,7 @@ class UserController{
         try {
             $userMapper = new UserMapper($this->db);
             $result = $userMapper->getUsers();
-            print_r($this->jsonResponse(200, $result));
+            return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -95,11 +98,11 @@ class UserController{
             $isLockedCount = $userMapper -> isLocked($user ->getEmail());
             // 3rd lock permanent
             if($isLockedCount > 2){
-                return print_r($this->jsonResponse(500, ['fail'=> "permanent-lock"]));
+                return $this->jsonResponse(500, ['fail'=> "permanent-lock"]);
             }else if ($isLockedCount > 0){
                 //check time
                 if(!$userMapper -> getLockedExpired($user->getEmail())) 
-                return print_r($this->jsonResponse(500, ['fail'=> $isLockedCount."th-lock"]));
+                return $this->jsonResponse(500, ['fail'=> $isLockedCount."th-lock"]);
             }
 
             //password verify
@@ -108,7 +111,7 @@ class UserController{
 
                 //Set Session
 
-                return print_r($this->jsonResponse(200, ['success'=> true]));
+                return $this->jsonResponse(200, ['success'=> true]);
             }else {
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
                     //update locked number
@@ -122,10 +125,10 @@ class UserController{
                             $userMapper -> updateLockedExpire(10,$user->getEmail());
                             break;
                     }
-                    return print_r($this->jsonResponse(500, ['fail'=> "isLocked"]));
+                    return $this->jsonResponse(500, ['fail'=> "isLocked"]);
                 }
                 $userMapper -> updateFailedLoginAttempts($user -> getEmail());
-                return print_r($this->jsonResponse(500, ["error" => "User verify fail"]));
+                return $this->jsonResponse(500, ["error" => "User verify fail"]);
             }
             
         } catch (PDOException $e) {
@@ -150,7 +153,7 @@ class UserController{
             //verify email - duplicate test
             if($userMapper -> verifyUserbyEmail($user -> getEmail())){
                 if ($userMapper -> createUser($user)) {
-                    return print_r($this->jsonResponse(201, ['message' => 'User Created']));
+                    return $this->jsonResponse(201, ['message' => 'User Created']);
                 } else {
                     throw new Exception("Failed to create user.");
                 }
@@ -171,7 +174,6 @@ class UserController{
 
             $user = new User();
             $user -> setName($input['name']);
-            $user-> setEmail($input['email']);
             $user-> setId($input['uid']);
 
             if ($userMapper -> updateUser($user)) {
@@ -188,7 +190,7 @@ class UserController{
     public function deleteUser() {
         try {
             $userMapper = new UserMapper($this->db);
-            $user_id = $_POST["user_id"];
+            $user_id = $_POST["uid"];
 
             if ($userMapper -> deleteUser($user_id)) {
                 return $this->jsonResponse(201, ['message' => 'User Updated']);
@@ -201,6 +203,25 @@ class UserController{
         }
     }
     
+    public function initLocked(){
+        try {
+            $userMapper = new UserMapper($this->db);
+            $input = $_POST;
+
+            $user = new User();
+            $user-> setId($input['uid']);
+            //get session & check user is admin
+            if ($userMapper -> initLocked($user->getId())) {
+                return $this->jsonResponse(201, ['message' => 'Locked release']);
+            } else {
+                throw new Exception("Failed to update user.");
+            }
+        } catch (Exception $e) {
+            error_log("Error init Lock: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
+        }
+    }
+
     private function jsonResponse($statusCode, $data) {
         header("Content-Type: application/json");
         http_response_code($statusCode);
