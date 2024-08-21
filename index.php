@@ -17,6 +17,15 @@ function route($method, $path) {
     if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
         echo "index.php";
     } 
+    //Login & Register 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/register') {
+        $controller = new UserController($db, $method);
+        return json_encode($controller->processRequest('add-user'));
+    } 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/login') {
+        $controller = new UserController($db, $method);
+        return json_encode($controller->processRequest('login'));
+    } 
     //UserController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
         $controller = new UserController($db, $method);

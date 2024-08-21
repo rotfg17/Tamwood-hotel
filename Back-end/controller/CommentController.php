@@ -68,7 +68,7 @@ class CommentController
     try {
       $commentMapper = new CommentMapper($this->db);
       $result = $commentMapper->getComments();
-      print_r($this->jsonResponse(200, $result));
+      return print_r($this->jsonResponse(200, $result));
     } catch (PDOException $e) {
       error_log("Error getting comments: " . $e->getMessage()); // error log
       return $this->jsonResponse(500, ["error" => "Error getting comments: " . $e->getMessage()]);

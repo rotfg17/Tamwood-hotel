@@ -29,6 +29,9 @@ class UserController{
             case 'delete-user':
                 $response = $this->deleteUser();
                 break;
+            case 'login':
+                $response = $this->login();
+                break;
             default:
                 $response = $this->notFoundResponse();
                 break;
@@ -69,18 +72,75 @@ class UserController{
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
         }
     }
-    
+    public function Login() {
+        try {
+            $userMapper = new UserMapper($this->db);
+            $input = $_POST;
+
+            //Setting User Class
+            $user = new User();
+
+            $user-> setEmail($input['email']);
+            $user -> setPasswordHash($input['password']); // password hash
+
+            //is locked
+            $isLockedCount = $userMapper -> isLocked($user ->getEmail());
+            // 3rd lock permanent
+            if($isLockedCount > 2){
+                return print_r($this->jsonResponse(500, ['fail'=> "permanent-lock"]));
+            }else if ($isLockedCount > 0){
+                //check time
+                if(!$userMapper -> getLockedExpired($user->getEmail())) 
+                return print_r($this->jsonResponse(500, ['fail'=> $isLockedCount."th-lock"]));
+            }
+
+            //password verify
+            if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
+                echo "login";
+
+                //Set Session
+
+                return print_r($this->jsonResponse(200, ['success'=> true]));
+            }else {
+                if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
+                    //update locked number
+                    $userMapper -> updateIsLocked($user->getEmail());
+
+                    //update Expire time
+                    switch ($userMapper -> isLocked($user ->getEmail())) {
+                        case 1:
+                            $userMapper -> updateLockedExpire(4,$user->getEmail());
+                        case 2:
+                            $userMapper -> updateLockedExpire(10,$user->getEmail());
+                        
+                        return print_r($this->jsonResponse(500, ['fail'=> "isLocked"]));
+                    }
+                }
+                $userMapper -> updateFailedLoginAttempts($user -> getEmail());
+                return print_r($this->jsonResponse(500, ["error" => "User verify fail"]));
+            }
+            
+        } catch (PDOException $e) {
+            error_log("Error Login: " . $e->getMessage()); // error log
+            return $this->jsonResponse(500, ["error" => "Error getting Login: " . $e->getMessage()]);
+        }
+    }
+
     public function createUser() {
         try {
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
+            //Setting User Class
             $user = new User();
+
             $user -> setName($input['name']);
+            $user -> setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT)); // password hash
             $user-> setEmail($input['email']);
             $user -> setRole($input['role']);
 
-            if($userMapper -> verifyUserbyEmail($user)){
+            //verify email - duplicate test
+            if($userMapper -> verifyUserbyEmail($user -> getEmail())){
                 if ($userMapper -> createUser($user)) {
                     return print_r($this->jsonResponse(201, ['message' => 'User Created']));
                 } else {
