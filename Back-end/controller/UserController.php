@@ -33,6 +33,9 @@ class UserController{
             case 'login':
                 $response = $this->login();
                 break;
+            case 'logout':
+                $this->Logout();
+                break;
             case 'init-locked':
                 $response = $this->initLocked();
                 break;
@@ -104,10 +107,14 @@ class UserController{
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
                 $newUser = $userMapper -> getUserByEmail($user->getEmail());
+                $session = new Session;
+                $session -> startSession();
                 //Set Session
-                $_SESSION['user_email'] = serialize($user->getEmail());
+                $_SESSION['sid'] = session_id();
+                $_SESSION['user_email'] = $newUser['email'];
+                $_SESSION['userClass'] = $newUser;
 
-                return $this->jsonResponse(200, ['result'=> 'success']);
+                return $this->jsonResponse(200, ['result'=> session_id()]);
             }else {
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
                     //update locked number
@@ -132,9 +139,18 @@ class UserController{
             return $this->jsonResponse(500, ["error" => "Error getting Login: " . $e->getMessage()]);
         }
     }
+    public function Logout() {
+        $session = new Session();
+        $session -> deleteSession();
 
+        header("Location: /Tamwood-hotel/");
+        exit();
+    }
     public function createUser() {
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin') throw new Exception("No permission");
+            
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
@@ -165,6 +181,9 @@ class UserController{
 
     public function updateUser() {
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
@@ -185,6 +204,9 @@ class UserController{
 
     public function deleteUser() {
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $user_id = $_POST["uid"];
 
@@ -201,6 +223,9 @@ class UserController{
     
     public function initLocked(){
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
