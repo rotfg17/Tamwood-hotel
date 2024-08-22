@@ -12,7 +12,7 @@ class Session {
         session_start();
 
         $_SESSION['userClass'] = serialize($user);
-        $_SESSION['timeout'] = time() + 5;
+        $_SESSION['timeout'] = time() + 3600;
 
         return session_id();
     }
@@ -31,7 +31,7 @@ class Session {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
                     $sessionStatus = session_id();
-                    $_SESSION['timeout'] = time() + 5;
+                    $_SESSION['timeout'] = time() + 1000;
                 } else {
                     $this->deleteSession();
                 }
