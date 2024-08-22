@@ -11,7 +11,8 @@ class RoomMapper {
     
     public function getRoomTypes() {
         try {
-            $query = "SELECT DISTINCT room_number, room_type, price_per_night, description, image_url, status FROM " . $this->table_name;
+            $query = "SELECT DISTINCT room_number, room_type, price_per_night, 
+            description, image_url, status FROM " . $this->table_name;
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
     
