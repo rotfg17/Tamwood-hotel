@@ -203,7 +203,7 @@ try {
     $sessionStatus = $session->getSession();
 
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
-
+    
     // Asegurarse de que $response es una cadena antes de decodificar
     if (is_string($response)) {
         $data = json_decode($response, true);

@@ -58,9 +58,11 @@ class UserController{
 
             $user_count = $userMapper->getUserTotalCount();
             $pageObject = new Paging($currPage, $user_count, 20);
-            $result = $userMapper->getUserList($pageObject, $searchString, $searchType);
+
+            $data = ["result"=>$userMapper->getUserList($pageObject, $searchString, $searchType),
+                    "pagination" => $pageObject->getPaginationLinks($_SERVER['REDIRECT_URL'])];
             
-            return $this->jsonResponse(200, $result);
+            return $this->jsonResponse(200, $data);
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -84,8 +86,8 @@ class UserController{
             //Setting User Class
             $user = new User();
 
-            $user->setEmail($input['email']);
-            $user->setPasswordHash($input['password']); // password hash
+            $user-> setEmail($input['email']);
+            $user -> setPasswordHash($input['password']); // password hash
 
             //is locked
             $isLockedCount = $userMapper -> isLocked($user ->getEmail());
