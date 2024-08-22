@@ -103,6 +103,7 @@ class UserController{
 
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
+                $newUser = $userMapper -> getUserByEmail($user->getEmail());
                 //Set Session
                 $_SESSION['user_email'] = serialize($user->getEmail());
 
