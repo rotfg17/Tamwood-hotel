@@ -2,34 +2,38 @@
 require_once __DIR__ . '/../model/User.php';
 
 class Session {
-    public function startSession() {
+    public $sessionStatus;
+
+    public function getSessionStatus() {
+        return $this->sessionStatus;
+    }
+
+    public function startSession(User $user) {
         session_start();
 
-        $_SESSION['timeout'] = time() + 3600;
+        $_SESSION['userClass'] = serialize($user);
+        $_SESSION['timeout'] = time() + 5;
 
-        return 'active';
+        return session_id();
     }
 
     public function deleteSession() {
         session_unset();
         session_destroy();
-
-        return 'expired';
     }
 
     public function getSession() {
         session_start();
 
-        $user_email = isset($_SESSION['user_email']) ? unserialize($_SESSION['user_email']) : null;
-        $sessionStatus = null;
+        $userClass = isset($_SESSION['userClass']) ? unserialize($_SESSION['userClass']) : null;
 
-        if ($user_email !== null) {
+        if ($userClass !== null) {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
-                    $sessionStatus = 'active';
-                    $_SESSION['timeout'] = time() + 1000;
+                    $sessionStatus = session_id();
+                    $_SESSION['timeout'] = time() + 5;
                 } else {
-                    $sessionStatus = $this->deleteSession();
+                    $this->deleteSession();
                 }
             } else {
                 $sessionStatus = $this->startSession();

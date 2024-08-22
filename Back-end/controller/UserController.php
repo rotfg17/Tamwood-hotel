@@ -101,9 +101,13 @@ class UserController{
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
                 //Set Session
-                $_SESSION['user_email'] = serialize($user->getEmail());
+                $email = $user->getEmail();
+                $userInfo = $userMapper->getUserByEmail($email);
+                $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
+                $session = new Session();
+                $sid = $session->startSession($newUser);
 
-                return $this->jsonResponse(200, ['result'=> 'success']);
+                return $this->jsonResponse(200, ['sid'=> $sid]);
             }else {
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
                     //update locked number
