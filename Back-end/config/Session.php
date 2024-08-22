@@ -6,8 +6,7 @@ class Session {
         session_start();
 
         $_SESSION['timeout'] = time() + 3600;
-
-        return 'active';
+        return $_SESSION['sid'];
     }
 
     public function deleteSession() {
@@ -26,7 +25,7 @@ class Session {
         if ($user_email !== null) {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
-                    $sessionStatus = 'active';
+                    $sessionStatus = $_SESSION['sid'];
                     $_SESSION['timeout'] = time() + 1000;
                 } else {
                     $sessionStatus = $this->deleteSession();

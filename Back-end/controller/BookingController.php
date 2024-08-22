@@ -54,8 +54,11 @@ class BookingController{
 
             $booking_count = $bookingMapper->getBookingTotalCount();
             $pageObject = new Paging($currPage, $booking_count, 20);
-            $result = $bookingMapper->getBookingList($pageObject, $searchString, $searchType);
-            return $this->jsonResponse(200, $result);
+            
+            $data = ["result"=>$bookingMapper->getBookingList($pageObject, $searchString, $searchType),
+            "pagination" => $pageObject->getPaginationLinks($_SERVER['REDIRECT_URL'])];
+
+            return $this->jsonResponse(200, $data);
         } catch (PDOException $e) {
             error_log("Error getting bookings: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting bookings: " . $e->getMessage()]);
@@ -101,7 +104,7 @@ class BookingController{
             $input = json_decode(file_get_contents('php://input'), true);
             
             // booking: user_id, room_id, check_in_date, check_out_date return booking_id
-            $booking -> setUserId($input['user_id']);
+            $booking -> setBookingId($input['user_id']);
             $booking -> setRoomId($input['room_id']);
             $booking -> setCheckInDate($input['check_in_date']);
             $booking -> setCheckOutDate($input['check_out_date']);
@@ -145,6 +148,10 @@ class BookingController{
 
     public function updateBookingStatus() {
         try {
+
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin' && $role != 'staff') throw new Exception("Failed to update booking.");
+
             $bookingMapper = new BookingMapper($this->db);
             $input = $_POST;
 
@@ -153,7 +160,7 @@ class BookingController{
             $booking -> setStatus($input['status']);
 
             if ($bookingMapper -> updateBookingStatus($booking)) {
-                return $this->jsonResponse(201, ['message' => 'User Updated']);
+                return $this->jsonResponse(201, ['message' => 'Booking Updated']);
             } else {
                 throw new Exception("Failed to update booking.");
             }
@@ -165,11 +172,14 @@ class BookingController{
 
     public function deleteBooking() {
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin' && $role != 'staff') throw new Exception("Failed to delete booking.");
+
             $bookingMapper = new BookingMapper($this->db);
             $booking_id = $_POST["bid"];
 
             if ($bookingMapper -> deleteBooking($booking_id)) {
-                return $this->jsonResponse(201, ['message' => 'User Updated']);
+                return $this->jsonResponse(201, ['message' => 'Booking Updated']);
             } else {
                 throw new Exception("Failed to delete booking.");
             }
