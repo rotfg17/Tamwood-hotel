@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../model/Room.php';
 
-class RoomMapper{
+class RoomMapper {
     private $conn;
     private $table_name = 'rooms';
 
@@ -10,19 +10,18 @@ class RoomMapper{
     }
     
     public function getRoomTypes() {
-        try {//need paging util
-            $query = "SELECT DISTINCT room_type 
-                        FROM " . $this->table_name;
+        try {
+            $query = "SELECT DISTINCT room_number, room_type, price_per_night, description, image_url, status FROM " . $this->table_name;
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
     
-            $users = [];
+            $roomTypes = [];
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $users[] = $row;
+                $roomTypes[] = $row;
             }
-            return $users;
+            return $roomTypes;
         } catch (PDOException $e) {
-            error_log("Error in getRooms: " . $e->getMessage());
+            error_log("Error in getRoomTypes: " . $e->getMessage());
             return $e->getMessage();
         }
     }
@@ -57,21 +56,54 @@ class RoomMapper{
             return $e->getMessage();
         }
     }
+    public function getAvailableRooms($selectedCheckInDate, $selectedCheckOutDate) {
+        try{
+            $query = "SELECT * FROM " . $this->table_name .
+                        " WHERE room_id IN(
+                            SELECT room_id FROM `bookings` 
+                            WHERE NOT (check_in_date <= :selectedCheckInDate 
+                            AND check_out_date >= :selectedCheckOutDate )
+                        ) AND status = 'available'";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':selectedCheckInDate', $selectedCheckInDate );
+            $stmt->bindParam(':selectedCheckOutDate', $selectedCheckOutDate );
 
-    public function createRoom(Room $room) {
+            $stmt->execute();
+            
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $rooms[] = $row;
+            }
+
+            return $rooms;
+        } catch (PDOException $e) {
+            error_log("Error in getAvailableRooms(): " . $e->getMessage());
+            return $e->getMessage();
+        }
+    }
+
+    public function createRoom(Room $room):int | bool {
         try {         
             $query = "INSERT INTO " . $this->table_name . " 
                 (room_number, room_type, price_per_night, description, image_url, status) 
-                value (:room_number, :room_type, :price_per_night, :description, :image_url, :status)";
+                VALUES (:room_number, :room_type, :price_per_night, :description, :image_url, :status)";
 
             $stmt = $this->conn->prepare($query);
 
-            $stmt->bindParam(':room_number', $room->getRoomNumber());
-            $stmt->bindParam(':room_type', $room->getRoomType());
-            $stmt->bindParam(':price_per_night', $room->getPricePerNight());
-            $stmt->bindParam(':description', $room->getDescription());
-            $stmt->bindParam(':image_url', $room->getImageUrl());
-            $stmt->bindParam(':status', $room->getStatus());
+            // Asigna el valor a una variable antes de pasarlo a bindParam
+            $roomNumber = $room->getRoomNumber();
+            $roomType = $room->getRoomType();
+            $pricePerNight = $room->getPricePerNight();
+            $description = $room->getDescription();
+            $imageUrl = $room->getImageUrl();
+            $status = $room->getStatus();
+
+            $stmt->bindParam(':room_number', $roomNumber);
+            $stmt->bindParam(':room_type', $roomType);
+            $stmt->bindParam(':price_per_night', $pricePerNight);
+            $stmt->bindParam(':description', $description);
+            $stmt->bindParam(':image_url', $imageUrl);
+            $stmt->bindParam(':status', $status);
             
             if ($stmt->execute()) {
                 return true;
@@ -89,34 +121,40 @@ class RoomMapper{
             $fieldsToUpdate = [];
             $params = [':room_id' => $room->getRoomId()];            
 
-            if ($room->getRoomNumber() !== null) {
+            $roomNumber = $room->getRoomNumber();
+            if ($roomNumber !== null) {
                 $fieldsToUpdate[] = "room_number = :room_number";
-                $params[':room_number'] = $room->getRoomNumber();
+                $params[':room_number'] = $roomNumber;
             }
 
-            if ($room->getRoomType() !== null) {
+            $roomType = $room->getRoomType();
+            if ($roomType !== null) {
                 $fieldsToUpdate[] = "room_type = :room_type";
-                $params[':room_type'] = $room->getRoomType();
+                $params[':room_type'] = $roomType;
             }
 
-            if ($room->getPricePerNight() !== null) {
+            $pricePerNight = $room->getPricePerNight();
+            if ($pricePerNight !== null) {
                 $fieldsToUpdate[] = "price_per_night = :price_per_night";
-                $params[':price_per_night'] = $room->getPricePerNight();
+                $params[':price_per_night'] = $pricePerNight;
             }
 
-            if ($room->getDescription() !== null) {
+            $description = $room->getDescription();
+            if ($description !== null) {
                 $fieldsToUpdate[] = "description = :description";
-                $params[':description'] = $room->getDescription();
+                $params[':description'] = $description;
             }
 
-            if ($room->getImageUrl() !== null) {
+            $imageUrl = $room->getImageUrl();
+            if ($imageUrl !== null) {
                 $fieldsToUpdate[] = "image_url = :image_url";
-                $params[':image_url'] = $room->getImageUrl();
+                $params[':image_url'] = $imageUrl;
             }
 
-            if ($room->getStatus() !== null) {
+            $status = $room->getStatus();
+            if ($status !== null) {
                 $fieldsToUpdate[] = "status = :status";
-                $params[':status'] = $room->getStatus();
+                $params[':status'] = $status;
             }
 
             $fieldsToUpdate[] = "updated_at = CURRENT_TIMESTAMP";
@@ -145,7 +183,8 @@ class RoomMapper{
 
             $stmt = $this->conn->prepare($query);
 
-            $stmt->bindParam(':room_id', $room->getRoomId());
+            $roomId = $room->getRoomId();
+            $stmt->bindParam(':room_id', $roomId);
             
             if ($stmt->execute()) {
                 return true;
@@ -156,6 +195,24 @@ class RoomMapper{
             return $e->getMessage();
         }
     }
-}
 
+    public function getRoomPrice(int $roomId, int $interval) {
+        try {
+            $query = "SELECT price_per_night * :interval FROM " . $this->table_name . "
+                    WHERE room_id =:room_id";
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(":interval", $interval);
+            $stmt->bindParam(":room_id", $roomId);
+
+            $stmt->execute();
+    
+            return $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error in getRoomTypes: " . $e->getMessage());
+            return $e->getMessage();
+        }
+    }
+    
+}
 ?>

@@ -109,6 +109,29 @@ class ServiceMapper{
             return $e->getMessage();
         }
     }
+
+    public function getServicePrice(array $serviceArr):array{
+        try {
+            $query = "SELECT price * :quantity as totalPrice FROM " . $this->table_name . " WHERE service_id = :service_id";
+
+            $totalPrice =[];
+    
+            for($idx=0; $idx < count($serviceArr["service_id"]); $idx++) {
+                $stmt = $this->conn->prepare($query);
+    
+                $stmt->bindParam(':quantity', $serviceArr["quantity"][$idx]);
+                $stmt->bindParam(':service_id', $serviceArr["service_id"][$idx]);
+                $stmt->execute();
+
+                array_push($totalPrice, $stmt->fetchColumn());
+            }
+            return $totalPrice;
+        } catch (PDOException $e) {
+            error_log("Error in deleteService: " . $e->getMessage());
+            return $e->getMessage();
+        }
+    }
+
 }
 
 ?>

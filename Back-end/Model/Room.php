@@ -89,14 +89,6 @@ class Room {
         $this->status = $status;
     }
 
-    public function setCreatedAt() {
-        $this->created_at = $created_at;
-    }
-
-    public function setUpdatedAt() {
-        $this->updated_at = $updated_at;
-    }
-
     function uploadFile(array $file): string {
         global $uploadFileDir;
 
@@ -105,7 +97,7 @@ class Room {
             $fileNameCmps = explode(".", $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
         
-            $allowedFileExtensions = ['jpg', 'gif', 'png', 'webp'];
+            $allowedFileExtensions = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
             if (in_array($fileExtension, $allowedFileExtensions)) {
                 $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
                 $dest_path = $uploadFileDir . $newFileName;

@@ -15,18 +15,17 @@ class UserMapper{
         // biding parameter
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
-    
-            $count = $stmt -> fetch(PDO::FETCH_ASSOC);
-
-            return $count["count"];
+            
+            $count = $stmt->fetchColumn();
+            return $count;
         } catch (PDOException $e) {
             error_log("Error in getUsers: " . $e->getMessage());
             return 0;
         }
     }
-    public function getUserList(Paging $paging, int $page_number,  string $searchString="", string $searchType ="", int $records_per_page = 20) {
-        // verify page number (set init 1)
-        $page_number = $paging -> getTotalPages();
+    public function getUserList(Paging $paging, string $searchString="", string $searchType =""):array {
+        // Page per row
+        $records_per_page = $paging -> getItemsPerPage();
         // cal OFFSET 
         $offset = $paging -> getOffset();
 
@@ -40,7 +39,7 @@ class UserMapper{
             $query .= " WHERE role LIKE '%".$searchString."%'";
             $query .= " ORDER BY user_id DESC 
                         LIMIT :limit OFFSET :offset";
-        echo $query;
+        
         // biding <paramete></paramete>r
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':limit', $records_per_page, PDO::PARAM_INT);
@@ -58,7 +57,7 @@ class UserMapper{
         }
     }
 
-    public function getUsers() {
+    public function getUsers():array {
         try {//need paging util
             $query = "SELECT * 
                         FROM " . $this->table_name. 
@@ -78,50 +77,54 @@ class UserMapper{
     }
     
     
+    public function verifyUserbyEmail(string $email):bool {
+        $query = "SELECT count(*) as count FROM ".$this->table_name. " WHERE email=:email";
 
-    public function createUser(User $user) {
-        $query = "INSERT INTO " . $this->table_name . "(
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $email);
+        $stmt->execute();
+            
+        $count = $stmt->fetchColumn();
+        if($count > 0) return false;
+        else return true;
+
+    }
+    public function createUser(User $user):bool {
+        $query = "INSERT INTO " . $this->table_name . " (
                                                             username,
                                                             password_hash,
                                                             email,
-                                                            role,
-                                                            is_locked,
-                                                            failed_login_attempts,
-                                                            wallet_balance
+                                                            role
                                                         ) 
-                                                values (
-                                                            :name, 
-                                                            'hashed-password',
+                                                        VALUES (
+                                                            :username, 
+                                                            :password_hash,
                                                             :email,
-                                                            :role,
-                                                            0,
-                                                            0,
-                                                            0.0
+                                                            :role
                                                         )";
-
         $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':name', $user->getName());
+    
+        $stmt->bindParam(':username', $user->getName());
+        $stmt->bindParam(':password_hash', $user->getPasswordHash());
         $stmt->bindParam(':email', $user->getEmail());
         $stmt->bindParam(':role', $user->getRole());
 
+
         if ($stmt->execute()) {
             return true;
-        }
-        return false;
+            }
+            return false;
     }
     public function updateUser(User $user){
         $query = "UPDATE " . $this->table_name . " 
                         SET 
-                            username = :name, 
-                            email = :email
+                            username = :name
                         WHERE 
                             user_id = :id
                             ";
         $stmt = $this->conn->prepare($query);
         
         $stmt->bindParam(':name', $user->getName());
-        $stmt->bindParam(':email', $user->getEmail());
         $stmt->bindParam(':id', $user->getId());
         
         if ($stmt->execute()) {
@@ -138,11 +141,131 @@ class UserMapper{
 
         $stmt->bindParam(":id",$user_id);
 
-        $stmt->execute();
         if ($stmt->execute()) {
             return true;
             }
             return false;
+    }
+
+    public function getPassword(User $user) {
+        $query = "SELECT password_hash FROM ".$this -> table_name ." WHERE email = :email";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':email', $user->getEmail());
+        $stmt->execute();
+        
+        $pass=$stmt->fetchColumn();
+
+        return $pass;
+    }
+    public function updateLockedExpire(int $hour, string $email) {
+        $query = "UPDATE ". $this->table_name ."
+                    SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
+                    WHERE email = :email";
+    
+        $stmt = $this->conn->prepare($query);
+    
+        $stmt->bindParam(":hour", $hour, PDO::PARAM_INT);
+        $stmt->bindParam(":email", $email);
+    
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+    public function isLocked(string $email):int{
+        $query = "SELECT is_locked FROM ".$this -> table_name ." WHERE email = :email";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        $isLocked = $stmt->fetchColumn();
+
+        return $isLocked;
+    }
+    public function updateIsLocked(string $email) {
+        $query = "UPDATE " . $this->table_name . " 
+                    SET 
+                        is_locked = is_locked + 1
+                    WHERE 
+                        email =:email
+                        ";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':email', $email);
+        
+        if ($stmt->execute()) {
+        return true;
+        }
+        return false;
+
+    }
+    public function updateFailedLoginAttempts(string $email) {
+        $query = "UPDATE " . $this->table_name . " 
+                    SET 
+                        failed_login_attempts = failed_login_attempts + 1
+                    WHERE 
+                        email =:email
+                        ";
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':email', $email);
+        
+        if ($stmt->execute()) {
+        return true;
+        }
+        return false;
+
+    }
+
+    public function getFailedLoginAttempts(string $email) {
+        $query = "SELECT failed_login_attempts FROM ".$this -> table_name ." WHERE email = :email";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        $fail_num = $stmt->fetchColumn();
+
+        return $fail_num;
+    }
+
+    public function getLockedExpired($email) {
+        $query = "SELECT count(*) FROM ".$this->table_name." WHERE locked_expire < NOW() AND email = :email";
+    
+        $stmt = $this->conn->prepare($query);
+    
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        $result = $stmt->fetchColumn();
+        if($result > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //
+    public function initLocked(int $user_id) {
+        $query = "UPDATE ". $this->table_name ."
+                    SET is_locked = 0,
+                        failed_login_attempts = 0
+                    WHERE user_id = :user_id";
+    
+        $stmt = $this->conn->prepare($query);
+    
+        $stmt->bindParam(":user_id", $user_id);
+    
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
     }
 }
 
