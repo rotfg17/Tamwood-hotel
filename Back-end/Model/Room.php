@@ -97,7 +97,7 @@ class Room {
             $fileNameCmps = explode(".", $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
         
-            $allowedFileExtensions = ['jpg', 'gif', 'png', 'webp'];
+            $allowedFileExtensions = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
             if (in_array($fileExtension, $allowedFileExtensions)) {
                 $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
                 $dest_path = $uploadFileDir . $newFileName;
