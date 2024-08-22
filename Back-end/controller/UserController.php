@@ -109,11 +109,13 @@ class UserController{
                 $session = new Session;
                 $session -> startSession();
                 //Set Session
-                $_SESSION['sid'] = session_id();
-                $_SESSION['user_email'] = $newUser['email'];
-                $_SESSION['userClass'] = $newUser;
+                $email = $user->getEmail();
+                $userInfo = $userMapper->getUserByEmail($email);
+                $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
+                $session = new Session();
+                $sid = $session->startSession($newUser);
 
-                return $this->jsonResponse(200, ['result'=> session_id()]);
+                return $this->jsonResponse(200, ['sid'=> $sid]);
             }else {
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
                     //update locked number

@@ -209,23 +209,15 @@ try {
     $sessionStatus = $session->getSession();
 
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
-    
-    // Asegurarse de que $response es una cadena antes de decodificar
-    if (is_string($response)) {
-        $data = json_decode($response, true);
-    } elseif (is_array($response)) {
-        $data = $response;
-    } else {
-        $data = null;
-        error_log('Unexpected response format in route');
-    }
 
-    if (isset($data['result']) && $data['result'] === 'success') {
-        $sessionStatus = $session->startSession();
-    }
+    $data = json_decode($response, true);
+
+    // if (isset($data['sid']) && $data['sid'] !== null) {
+    //     $sessionStatus = $session->startSession();
+    // }
 
     echo json_encode([
-        'sessionStatus' => $sessionStatus,
+        'sessionStatus' => $sessionStatus!=null ? $sessionStatus : null,
         'data' => $data,
     ]);
 } catch(Exception $error) {

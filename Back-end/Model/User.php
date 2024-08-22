@@ -10,15 +10,15 @@ class User {
     protected $wallet_balance;
 
     // Constructor
-    public function __construct($id = null, $name = null, $password_hash = null, $email = null, $role = null, $is_locked = false, $failed_login_attempt = 0, $wallet_balance = 0.0) {
+    public function __construct($id = null, $name = null, $password_hash = null, $email = null, $role = null, $wallet_balance = 0.0, $is_locked = false, $failed_login_attempt = 0) {
         $this->id = $id;
         $this->name = $name;
         $this->password_hash = $password_hash;
         $this->email = $email;
         $this->role = $role;
+        $this->wallet_balance = $wallet_balance;
         $this->is_locked = $is_locked;
         $this->failed_login_attempt = $failed_login_attempt;
-        $this->wallet_balance = $wallet_balance;
     }
 
     // Getters

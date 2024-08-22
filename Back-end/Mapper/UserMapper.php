@@ -298,6 +298,22 @@ class UserMapper{
         }
         return false;
     }
+    public function getUserByEmail(string $email):mixed {
+        try {
+            $query = "SELECT * 
+            FROM " . $this->table_name. 
+            " WHERE email =:email";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":email", $email);
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);            
+
+            return $user;
+        } catch (PDOException $e) {
+            error_log("Error in getUserByEmail: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 
 ?>
