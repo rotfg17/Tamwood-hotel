@@ -6,31 +6,22 @@ const RoomList = () => {
     const [rooms, setRooms] = useState([]);
     const [error, setError] = useState(null);
 
-    // Declarar la sessionKey
-    // const sessionKey = 'tamwood-hotel:)';
-
     const fetchRooms = async () => {
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/room-type', {
-                // method: 'GET',
-                // headers: {
-                //     'session-key': sessionKey,  // Agrega la session-key en los encabezados
-                //     'Content-Type': 'application/json',
-                // },
-            });
-
+            const response = await fetch('http://localhost/Tamwood-hotel/api/room-type');
+            
             if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('Session expired, please login again.');
-                }
-                throw new Error('Error getting data from server');
+                throw new Error('Error fetching rooms');
             }
 
             const data = await response.json();
-            setRooms(data);
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            setRooms(data.data); // Asegurarse de que la estructura de la respuesta coincida
         } catch (error) {
-            console.error('Error getting rooms:', error);
-            setError(error.message || 'Failed to load rooms');
+            setError(error.message);
         }
     };
 
@@ -56,7 +47,7 @@ const RoomList = () => {
                 <tbody>
                     {rooms.length === 0 ? (
                         <tr>
-                            <td colSpan="6">No rooms available</td>
+                            <td colSpan="7">No rooms available</td>
                         </tr>
                     ) : (
                         rooms.map((room, index) => (

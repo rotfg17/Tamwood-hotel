@@ -189,16 +189,16 @@ try {
 
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
-    $data = json_decode($response);
-    $result = $data->result;
+    // Decode the JSON response
+    $data = json_decode($response, true); // true converts the JSON object to associative array
 
-    if ($result === 'success') {
+    if (isset($data['result']) && $data['result'] === 'success') {
         $sessionStatus = $session->startSession();
     }
 
     echo json_encode([
         'sessionStatus' => $sessionStatus,
-        'data' => json_decode($response),
+        'data' => $data, // Now $data is an array and not an object
     ]);
 } catch(Exception $error) {
     header("HTTP/1.1 500 Internal Server Error");
