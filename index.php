@@ -9,6 +9,20 @@ require_once './Back-end/controller/RoomController.php';
 require_once './Back-end/controller/TransactionController.php';
 require_once './Back-end/controller/ServiceController.php';
 
+function handleCors() {
+    // Allow all origins for simplicity, adjust for production environments
+    header("Access-Control-Allow-Origin: *");
+    // Specify the allowed methods
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    // Specify the allowed headers
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+    // Handle preflight requests
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        header("HTTP/1.1 200 OK");
+        exit();
+    }
+}
+
 function route($method, $path) {
     $parsedPath = parse_url($path, PHP_URL_PATH);
     $db = new Database();
@@ -180,17 +194,25 @@ function route($method, $path) {
     }
 }
 
+// Handle CORS
+handleCors();
+
 // Real Request
 try {
-    header("Access-Control-Allow-Origin: *");
-    
     $session = new Session();
     $sessionStatus = $session->getSession();
 
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
-    // Decode the JSON response
-    $data = json_decode($response, true); // true converts the JSON object to associative array
+    // Asegurarse de que $response es una cadena antes de decodificar
+    if (is_string($response)) {
+        $data = json_decode($response, true);
+    } elseif (is_array($response)) {
+        $data = $response;
+    } else {
+        $data = null;
+        error_log('Unexpected response format in route');
+    }
 
     if (isset($data['result']) && $data['result'] === 'success') {
         $sessionStatus = $session->startSession();
@@ -198,7 +220,7 @@ try {
 
     echo json_encode([
         'sessionStatus' => $sessionStatus,
-        'data' => $data, // Now $data is an array and not an object
+        'data' => $data,
     ]);
 } catch(Exception $error) {
     header("HTTP/1.1 500 Internal Server Error");
