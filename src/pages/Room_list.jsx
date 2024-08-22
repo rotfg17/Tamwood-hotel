@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const RoomList = () => {
     const [rooms, setRooms] = useState([]);
@@ -7,6 +8,7 @@ const RoomList = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [editData, setEditData] = useState({
+        room_id: '',
         room_number: '',
         room_type: '',
         price_per_night: '',
@@ -16,17 +18,10 @@ const RoomList = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/room-type');
-            
-            if (!response.ok) {
-                throw new Error('Error fetching rooms');
-            }
-
+            const response = await fetch('http://localhost/Tamwood-hotel/api/rooms?status=available');
+            if (!response.ok) throw new Error('Error fetching rooms');
             const data = await response.json();
-            if (data.error) {
-                throw new Error(data.error);
-            }
-
+            if (data.error) throw new Error(data.error);
             setRooms(data.data);
         } catch (error) {
             setError(error.message);
@@ -36,11 +31,12 @@ const RoomList = () => {
     const handleEditClick = (room) => {
         setSelectedRoom(room);
         setEditData({
-            room_number: room.room_number,
-            room_type: room.room_type,
-            price_per_night: room.price_per_night,
-            description: room.description,
-            status: room.status,
+            room_id: room.room_id || '',
+            room_number: room.room_number || '',
+            room_type: room.room_type || '',
+            price_per_night: room.price_per_night || '',
+            description: room.description || '',
+            status: room.status || ''
         });
         setShowEditModal(true);
     };
@@ -50,24 +46,28 @@ const RoomList = () => {
         setShowDeleteModal(true);
     };
 
-    const handleEditSave = async () => {
+    const handleEditSave = async (e) => {
+        e.preventDefault();
+
+        // Crear un FormData y agregar todos los campos necesarios
+        const data = new FormData();
+        data.append('room_id', editData.room_id);
+        data.append('room_number', editData.room_number);
+        data.append('room_type', editData.room_type);
+        data.append('price_per_night', editData.price_per_night);
+        data.append('description', editData.description);
+        data.append('status', editData.status);
+
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/update-room', {
-                method: 'POST',
+            const response = await axios.post('http://localhost/Tamwood-hotel/api/update-room', data, {
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(editData)
+                    'Content-Type': 'multipart/form-data'
+                }
             });
 
-            if (!response.ok) {
-                throw new Error('Error updating room');
-            }
-
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(data.error);
-            }
+            if (response.status !== 200) throw new Error('Error updating room');
+            const resultData = response.data;
+            if (resultData.error) throw new Error(resultData.error);
 
             setShowEditModal(false);
             fetchRooms(); // Refrescar la lista de habitaciones después de la edición
@@ -76,31 +76,41 @@ const RoomList = () => {
         }
     };
 
+
     const handleDeleteConfirm = async () => {
+        console.log("Room ID to be deleted:", selectedRoom.room_id);  // Verifica que room_id es correcto
+    
+        const del = new FormData();
+        del.append('room_id', selectedRoom.room_id);
+    
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/delete-room', {
-                method: 'POST',
+            // Enviar la solicitud POST al servidor con el FormData
+            const response = await axios.post('http://localhost/Tamwood-hotel/api/delete-room', del, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data',
                 },
-                body: JSON.stringify({ room_number: selectedRoom.room_number })
             });
-
-            if (!response.ok) {
-                throw new Error('Error deleting room');
-            }
-
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(data.error);
-            }
-
+    
+            // Verificar si la solicitud fue exitosa
+            if (response.status !== 200) throw new Error('Error deleting room');
+            const resultData = response.data;
+            
+            // Verificar si el servidor devolvió algún error
+            if (resultData.error) throw new Error(resultData.error);
+    
+            // Cerrar el modal y actualizar la lista de habitaciones
             setShowDeleteModal(false);
             fetchRooms(); // Refrescar la lista de habitaciones después de la eliminación
         } catch (error) {
+            // Manejar cualquier error que ocurra durante el proceso
             setError(error.message);
         }
     };
+    
+    
+    
+    
+    
 
     useEffect(() => {
         fetchRooms();
@@ -147,13 +157,12 @@ const RoomList = () => {
                 </tbody>
             </table>
 
-            {/* Modal para editar */}
             {showEditModal && (
                 <div className="modal">
                     <div className="modal-content">
                         <span className="close" onClick={() => setShowEditModal(false)}>&times;</span>
                         <h2>Edit Room</h2>
-                        <form>
+                        <form onSubmit={handleEditSave}>
                             <div>
                                 <label>Room Number:</label>
                                 <input
@@ -199,14 +208,13 @@ const RoomList = () => {
                                     <option value="Maintenance">Maintenance</option>
                                 </select>
                             </div>
+                            <button type="submit">Save Changes</button>
+                            <button type="button" onClick={() => setShowEditModal(false)}>Cancel</button>
                         </form>
-                        <button onClick={handleEditSave}>Save Changes</button>
-                        <button onClick={() => setShowEditModal(false)}>Cancel</button>
                     </div>
                 </div>
             )}
 
-            {/* Modal para eliminar */}
             {showDeleteModal && (
                 <div className="modal">
                     <div className="modal-content">

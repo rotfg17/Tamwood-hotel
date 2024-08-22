@@ -37,22 +37,16 @@ class RoomController {
         }
         
         return $response;
-        // header($response['status_code_header']);
-        // if ($response['body']) {
-        //     echo $response['body'];
-        // }
     }
 
     public function getRoomTypes() {
         try {
             $roomMapper = new RoomMapper($this->db);
-
-            $result = $roomMapper -> getRoomTypes();
-
+            $result = $roomMapper->getRoomTypes();
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
-            error_log("Error getting Rooms: " . $e->getMessage()); // 에러 로그 추가
-            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+            error_log("Error getting Room Types: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Room Types: " . $e->getMessage()]);
         }
     }
 
@@ -60,9 +54,7 @@ class RoomController {
         try {
             $roomMapper = new RoomMapper($this->db);
             $status = isset($_GET['status']) ? $_GET['status'] : null;
-
             $result = $roomMapper->getRooms($status);
-
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error getting Rooms: " . $e->getMessage());
@@ -74,14 +66,12 @@ class RoomController {
         try {
             $roomMapper = new RoomMapper($this->db);
             $checkInDate = isset($_GET['checkInDate']) ? $_GET['checkInDate'] : null;
-            $checkOutDate = isset($_GET['checkOutDate']) ? $_GET['checkInDate'] : null;
-
+            $checkOutDate = isset($_GET['checkOutDate']) ? $_GET['checkOutDate'] : null;
             $result = $roomMapper->getAvailableRooms($checkInDate, $checkOutDate);
-
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
-            error_log("Error getting Rooms: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+            error_log("Error getting Available Rooms: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting Available Rooms: " . $e->getMessage()]);
         }
     }
 
@@ -99,11 +89,10 @@ class RoomController {
             $room->setImageUrl($room->uploadFile($_FILES['image']));
             
             $result = $roomMapper->createRoom($room);
-
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
-            error_log("Error getting Rooms: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error getting Rooms: " . $e->getMessage()]);
+            error_log("Error creating Room: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error creating Room: " . $e->getMessage()]);
         }
     }
 
@@ -111,66 +100,49 @@ class RoomController {
         try {
             $roomMapper = new RoomMapper($this->db);
             $input = $_POST;
-    
-            // Validar si las claves existen en $_POST
-            $room_id = isset($input['room_id']) ? $input['room_id'] : null;
-            $room_number = isset($input['room_number']) ? $input['room_number'] : null;
-            $room_type = isset($input['room_type']) ? $input['room_type'] : null;
-            $price_per_night = isset($input['price_per_night']) ? $input['price_per_night'] : null;
-            $description = isset($input['description']) ? $input['description'] : null;
-            $status = isset($input['status']) ? $input['status'] : null;
-    
-            // Verificar que todos los campos obligatorios están presentes
-            if (is_null($room_id) || is_null($room_number) || is_null($room_type) || is_null($price_per_night) || is_null($description) || is_null($status)) {
+
+            if (!isset($input['room_id']) || !isset($input['room_number']) || !isset($input['room_type']) || !isset($input['price_per_night']) || !isset($input['description']) || !isset($input['status'])) {
                 return $this->jsonResponse(400, ["error" => "Faltan datos requeridos para actualizar la habitación"]);
             }
-    
+
             $room = new Room();
-            $room->setRoomId($room_id);
-            $room->setRoomNumber($room_number);
-            $room->setRoomType($room_type);
-            $room->setPricePerNight($price_per_night);
-            $room->setDescription($description);
-            $room->setStatus($status);
-            
+            $room->setRoomId($input['room_id']);
+            $room->setRoomNumber($input['room_number']);
+            $room->setRoomType($input['room_type']);
+            $room->setPricePerNight($input['price_per_night']);
+            $room->setDescription($input['description']);
+            $room->setStatus($input['status']);
             if (isset($_FILES['image'])) {
                 $room->setImageUrl($room->uploadFile($_FILES['image']));
             }
-    
+
             $result = $roomMapper->updateRoom($room);
-    
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error updating Room: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error updating Room: " . $e->getMessage()]);
         }
     }
-    
 
     public function deleteRoom() {
         try {
             $roomMapper = new RoomMapper($this->db);
             $input = $_POST;
-            
-            // Validar si la clave existe en $_POST
-            $room_id = isset($input['room_id']) ? $input['room_id'] : null;
-    
-            if (is_null($room_id)) {
-                return $this->jsonResponse(400, ["error" => "Falta el ID de la habitación para eliminarla"]);
+
+            if (!isset($input['room_id'])) {
+                return $this->jsonResponse(400, ["error" => "Room ID is required for deletion"]);
             }
-    
+
             $room = new Room();
-            $room->setRoomId($room_id);
-    
+            $room->setRoomId($input['room_id']);
+
             $result = $roomMapper->deleteRoom($room);
-    
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error deleting Room: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error deleting Room: " . $e->getMessage()]);
         }
     }
-    
     
     private function jsonResponse($statusCode, $data) {
         header("Content-Type: application/json");
@@ -179,10 +151,27 @@ class RoomController {
     }
     
     private function notFoundResponse() {
-        $response['status_code_header'] = 'HTTP/1.1 404 Not Found';
-        $response['body'] = json_encode(['message' => 'Not Found']);
-        return $response;
+        return $this->jsonResponse(404, ['message' => 'Not Found']);
     }
-}
 
+    // public function deleteRelatedServices($room_id) {
+    //     $stmt = $this->db->prepare("DELETE FROM booking_services WHERE booking_id IN (SELECT booking_id FROM bookings WHERE room_id = :room_id)");
+    //     $stmt->bindParam(':room_id', $room_id);
+    //     $stmt->execute();
+    // }
+    
+    // public function deleteRelatedBookings($room_id) {
+    //     $stmt = $this->db->prepare("DELETE FROM bookings WHERE room_id = :room_id");
+    //     $stmt->bindParam(':room_id', $room_id);
+    //     $stmt->execute();
+    // }
+
+    // public function deleteRelatedComments($room_id) {
+    //     $stmt = $this->db->prepare("DELETE FROM comments WHERE room_id = :room_id");
+    //     $stmt->bindParam(':room_id', $room_id);
+    //     $stmt->execute();
+    // }
+    
+    
+}
 ?>
