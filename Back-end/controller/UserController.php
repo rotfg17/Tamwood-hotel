@@ -13,6 +13,7 @@ class UserController{
     }
 
     public function processRequest($param) {
+        print_r($_SESSION);
         switch ($param) {
             case 'user-list':
                 $response = $this->getUserList();

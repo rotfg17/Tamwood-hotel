@@ -87,6 +87,19 @@ class User {
         $this->wallet_balance = $wallet_balance;
     }
 }
-
-
+class Customer extends User {
+    public function __construct($id = null, $name = null, $password_hash = null, $email = null, $role = null, $is_locked = false, $failed_login_attempt = 0, $wallet_balance = 0.0) {
+        parent::__construct($id,$name,$password_hash,$email,"c", $phone);
+    }
+}
+class Staff extends User {
+    public function __construct($id = null, $name = null, $password_hash = null, $email = null, $role = null, $is_locked = false, $failed_login_attempt = 0, $wallet_balance = 0.0) {
+        parent::__construct($id,$name,$password_hash,$email,"s", $phone);
+    }
+}
+class Admin extends User {
+    public function __construct($id = null, $name = null, $password_hash = null, $email = null, $role = null, $is_locked = false, $failed_login_attempt = 0, $wallet_balance = 0.0) {
+        parent::__construct($id,$name,$password_hash,$email,"a", $phone);
+    }
+}
 ?>
