@@ -4,6 +4,7 @@ import axios from 'axios';
 const RoomList = () => {
     const [rooms, setRooms] = useState([]);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState('');
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -18,11 +19,11 @@ const RoomList = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/rooms?status=available');
+            const response = await fetch('http://localhost/Tamwood-hotel/api/rooms?status=available'); // Cambié la URL a la API correcta
             if (!response.ok) throw new Error('Error fetching rooms');
             const data = await response.json();
             if (data.error) throw new Error(data.error);
-            setRooms(data.data);
+            setRooms(data.data); // Se asigna directamente para mostrar todas las habitaciones
         } catch (error) {
             setError(error.message);
         }
@@ -49,7 +50,6 @@ const RoomList = () => {
     const handleEditSave = async (e) => {
         e.preventDefault();
 
-        // Crear un FormData y agregar todos los campos necesarios
         const data = new FormData();
         data.append('room_id', editData.room_id);
         data.append('room_number', editData.room_number);
@@ -70,47 +70,40 @@ const RoomList = () => {
             if (resultData.error) throw new Error(resultData.error);
 
             setShowEditModal(false);
+            setSuccessMessage('Room updated successfully!');
             fetchRooms(); // Refrescar la lista de habitaciones después de la edición
         } catch (error) {
             setError(error.message);
         }
     };
 
-
     const handleDeleteConfirm = async () => {
-        console.log("Room ID to be deleted:", selectedRoom.room_id);  // Verifica que room_id es correcto
-    
+        if (!selectedRoom || !selectedRoom.room_id) {
+            setError('Room ID is missing.');
+            return;
+        }
+
         const del = new FormData();
         del.append('room_id', selectedRoom.room_id);
-    
+
         try {
-            // Enviar la solicitud POST al servidor con el FormData
             const response = await axios.post('http://localhost/Tamwood-hotel/api/delete-room', del, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-    
-            // Verificar si la solicitud fue exitosa
+
             if (response.status !== 200) throw new Error('Error deleting room');
             const resultData = response.data;
-            
-            // Verificar si el servidor devolvió algún error
             if (resultData.error) throw new Error(resultData.error);
-    
-            // Cerrar el modal y actualizar la lista de habitaciones
+
             setShowDeleteModal(false);
+            setSuccessMessage('Room deleted successfully!');
             fetchRooms(); // Refrescar la lista de habitaciones después de la eliminación
         } catch (error) {
-            // Manejar cualquier error que ocurra durante el proceso
             setError(error.message);
         }
     };
-    
-    
-    
-    
-    
 
     useEffect(() => {
         fetchRooms();
@@ -120,6 +113,7 @@ const RoomList = () => {
         <div className="transaction-container">
             <h2>Rooms List</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
+            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
             <table className="table transaction-table table-striped table-bordered">
                 <thead>
                     <tr>
