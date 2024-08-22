@@ -9,10 +9,10 @@ import Bookings from "./pages/Bookings";
 import Services from "./pages/Services";
 import Comments from "./pages/Comments";
 import Audit_Logs from "./pages/Audit_Logs";
+import RoomList from "./pages/Room_list";
 import Sessions from "./pages/Sessions";
 import NoPage from "./pages/NoPage";
 import "./App.css";
-import Home from "./pages/Home";
 
 function App() {
   return (
