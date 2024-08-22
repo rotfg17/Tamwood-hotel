@@ -52,7 +52,7 @@ class ServiceController {
 
     public function createService() {
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin' && $role != 'staff') throw new Exception("Failed to create Service.");
 
             $serviceMapper = new ServiceMapper($this->db);

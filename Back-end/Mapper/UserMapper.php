@@ -76,17 +76,6 @@ class UserMapper{
         }
     }
     
-    public function getUserByEmail(string $email):array {
-        $query = "SELECT *  FROM ".$this->table_name. " WHERE email=:email";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":email", $email);
-        $stmt->execute();
-
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $user;
-    }
 
     public function verifyUserbyEmail(string $email):bool {
         $query = "SELECT count(*) as count FROM ".$this->table_name. " WHERE email=:email";

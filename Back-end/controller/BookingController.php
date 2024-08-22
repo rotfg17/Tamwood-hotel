@@ -149,7 +149,7 @@ class BookingController{
     public function updateBookingStatus() {
         try {
 
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin' && $role != 'staff') throw new Exception("Failed to update booking.");
 
             $bookingMapper = new BookingMapper($this->db);

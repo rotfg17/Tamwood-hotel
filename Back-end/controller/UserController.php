@@ -106,13 +106,13 @@ class UserController{
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
                 $newUser = $userMapper -> getUserByEmail($user->getEmail());
-                $session = new Session;
-                $session -> startSession();
                 //Set Session
+                $session = new Session;
                 $email = $user->getEmail();
                 $userInfo = $userMapper->getUserByEmail($email);
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
                 $session = new Session();
+
                 $sid = $session->startSession($newUser);
 
                 return $this->jsonResponse(200, ['sid'=> $sid]);
@@ -149,7 +149,7 @@ class UserController{
     }
     public function createUser() {
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin') throw new Exception("No permission");
             
             $userMapper = new UserMapper($this->db);
@@ -182,7 +182,7 @@ class UserController{
 
     public function updateUser() {
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin') throw new Exception("No permission");
 
             $userMapper = new UserMapper($this->db);
@@ -205,7 +205,7 @@ class UserController{
 
     public function deleteUser() {
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin') throw new Exception("No permission");
 
             $userMapper = new UserMapper($this->db);
@@ -224,7 +224,7 @@ class UserController{
     
     public function initLocked(){
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin') throw new Exception("No permission");
 
             $userMapper = new UserMapper($this->db);
