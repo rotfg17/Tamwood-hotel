@@ -554,3 +554,8 @@ tr th {
   text-decoration: none;
   cursor: pointer;
 }
+
+.error-message, .success-message {
+  color: #FFFFFF;
+  margin-bottom: 10px;
+}

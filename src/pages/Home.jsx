@@ -10,6 +10,8 @@ const Home = () => {
     email: "",
     password_hash: "",
   });
+  const [error, setError] = useState(""); // Estado para el mensaje de error
+  const [success, setSuccess] = useState(""); // Estado para el mensaje de éxito
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -19,9 +21,13 @@ const Home = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
+    // Resetear mensajes de error y éxito al enviar el formulario
+    setError("");
+    setSuccess("");
+
     // Ensure email and password are provided
     if (!formData.email || !formData.password_hash) {
-      alert("Email and password are required");
+      setError("Email and password are required");
       return;
     }
 
@@ -50,14 +56,18 @@ const Home = () => {
       const result = await response.json();
 
       if (result.sid) {
-        // Navigate to the dashboard on successful login
-        window.location.href = "/dashboard";
+        if (register) {
+          setSuccess("Registration successful! You can now log in.");
+        } else {
+          // Navigate to the dashboard on successful login
+          window.location.href = "/dashboard";
+        }
       } else {
-        alert(result.error || "Authentication failed. Please try again.");
+        setError(result.error || "Authentication failed. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      setError("An error occurred. Please try again.");
     }
   };
 
@@ -72,6 +82,8 @@ const Home = () => {
           <div>
             <span>{!register ? "Login" : "Register"}</span>
             <form onSubmit={handleSubmit}>
+              {error && <div className="error-message">{error}</div>} {/* Mostrar el error aquí */}
+              {success && <div className="success-message">{success}</div>} {/* Mostrar el éxito aquí */}
               {register && (
                 <div>
                   <label htmlFor="username">Username</label>
