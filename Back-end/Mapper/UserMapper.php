@@ -76,7 +76,7 @@ class UserMapper{
         }
     }
     
-    
+
     public function verifyUserbyEmail(string $email):bool {
         $query = "SELECT count(*) as count FROM ".$this->table_name. " WHERE email=:email";
 
@@ -268,6 +268,25 @@ class UserMapper{
         return false;
     }
 
+    public function updateWalletBalance( Transaction $transaction) {
+        $query = "UPDATE ". $this->table_name ;
+        if($transaction->getTransactionType() == "deposit"){
+            $query .= " SET wallet_balance = wallet_balance + :price";
+        }else if($transaction->getTransactionType() == "payment"){
+            $query .= " SET wallet_balance = wallet_balance - :price";
+        }
+        $query .= " WHERE user_id = :user_id";
+    
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(":price", $transaction->getAmount());
+        $stmt->bindParam(":user_id", $transaction->getUserId());
+    
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
     public function getUserByEmail(string $email):mixed {
         try {
             $query = "SELECT * 

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../model/User.php';
+require_once __DIR__ . '/../mapper/UserMapper.php';
 require_once __DIR__ . '/../model/Transaction.php';
 require_once __DIR__ . '/../mapper/TransactionMapper.php';
 
@@ -54,7 +55,8 @@ class TransactionController {
 
     public function createUserTransaction() {
         try {
-            $transactionMapper = new TransactionMapper($this->db);
+            //check session login
+            
             $input = $_POST;
             
             $transaction = new Transaction();
@@ -63,10 +65,19 @@ class TransactionController {
             $transaction->setAmount($input['amount']);
             $transaction->setDescription($input['description']);
 
+            $transactionMapper = new TransactionMapper($this->db);
+            $userMapper = new UserMapper($this->db);
+
+            //start transaction
+            $this->db->beginTransaction();
             $result = $transactionMapper->createUserTransaction($transaction);
+            $userMapper -> updateWalletBalance($transaction);
+            //finish transcation
+            $this->db->commit();
 
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
+            $this->db->rollback();
             error_log("Error getting Transactions: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error getting Transactions: " . $e->getMessage()]);
         }

@@ -32,6 +32,9 @@ class UserController{
             case 'login':
                 $response = $this->login();
                 break;
+            case 'logout':
+                $this->Logout();
+                break;
             case 'init-locked':
                 $response = $this->initLocked();
                 break;
@@ -58,9 +61,11 @@ class UserController{
 
             $user_count = $userMapper->getUserTotalCount();
             $pageObject = new Paging($currPage, $user_count, 20);
-            $result = $userMapper->getUserList($pageObject, $searchString, $searchType);
+
+            $data = ["result"=>$userMapper->getUserList($pageObject, $searchString, $searchType),
+                    "pagination" => $pageObject->getPaginationLinks($_SERVER['REDIRECT_URL'])];
             
-            return $this->jsonResponse(200, $result);
+            return $this->jsonResponse(200, $data);
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -84,8 +89,8 @@ class UserController{
             //Setting User Class
             $user = new User();
 
-            $user->setEmail($input['email']);
-            $user->setPasswordHash($input['password']); // password hash
+            $user-> setEmail($input['email']);
+            $user -> setPasswordHash($input['password']); // password hash
 
             //is locked
             $isLockedCount = $userMapper -> isLocked($user ->getEmail());
@@ -100,11 +105,14 @@ class UserController{
 
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
+                $newUser = $userMapper -> getUserByEmail($user->getEmail());
                 //Set Session
+                $session = new Session;
                 $email = $user->getEmail();
                 $userInfo = $userMapper->getUserByEmail($email);
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
                 $session = new Session();
+
                 $sid = $session->startSession($newUser);
 
                 return $this->jsonResponse(200, ['sid'=> $sid]);
@@ -132,9 +140,20 @@ class UserController{
             return $this->jsonResponse(500, ["error" => "Error getting Login: " . $e->getMessage()]);
         }
     }
+    public function Logout() {
+        $session = new Session();
+        $session -> deleteSession();
 
+        header("Location: /Tamwood-hotel/");
+        exit();
+    }
     public function createUser() {
         try {
+            if($_SESSION['userClass']){
+                $role = unserialize($_SESSION['userClass']) -> getRole();
+                if($role!='admin') throw new Exception("No permission");
+            }
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
@@ -165,6 +184,9 @@ class UserController{
 
     public function updateUser() {
         try {
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
@@ -185,6 +207,9 @@ class UserController{
 
     public function deleteUser() {
         try {
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $user_id = $_POST["uid"];
 
@@ -201,6 +226,9 @@ class UserController{
     
     public function initLocked(){
         try {
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
