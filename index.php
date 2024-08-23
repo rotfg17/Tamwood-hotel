@@ -32,7 +32,7 @@ function route($method, $path) {
     if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
         echo "index.php";
     } 
-    //Login & Register 
+    // Login & Register 
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/register') {
         $controller = new UserController($db, $method);
         return $controller->processRequest('add-user');
@@ -45,7 +45,7 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('init-locked');
     } 
-    //UserController
+    // UserController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
         $controller = new UserController($db, $method);
         return $controller->processRequest('user-list');
@@ -66,7 +66,7 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('delete-user');
     }
-    //BookingController
+    // BookingController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-list') {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-list');
@@ -91,7 +91,7 @@ function route($method, $path) {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('delete-booking');
     }
-    //Comment
+    // Comment
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comment-list') {
         $controller = new CommentController($db, $method);
         return $controller->processRequest('comment-list');
@@ -111,7 +111,7 @@ function route($method, $path) {
         $controller = new CommentController($db, $method);
         return $controller->processRequest('delete-comment');
     }
-    //RoomController
+    // RoomController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/room-type') {
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('room-types');
@@ -202,19 +202,28 @@ try {
     $session = new Session();
     $sessionStatus = $session->getSession();
 
+    // Llamada a la función route
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
-    $data = json_decode($response, true);
+    // Verifica si $response es una cadena o un array
+    if (is_string($response)) {
+        // Si es una cadena JSON, decodifícalo en un array
+        $data = json_decode($response, true);
+    } elseif (is_array($response)) {
+        // Si es un array, úsalo tal cual
+        $data = $response;
+    } else {
+        // Si $response no es ni una cadena ni un array, lanza un error
+        throw new Exception('Invalid response type from route function');
+    }
 
-    // if (isset($data['sid']) && $data['sid'] !== null) {
-    //     $sessionStatus = $session->startSession();
-    // }
-
+    // Envía la respuesta al cliente
     echo json_encode([
-        'sessionStatus' => $sessionStatus!=null ? $sessionStatus : null,
+        'sessionStatus' => $sessionStatus !== null ? $sessionStatus : null,
         'data' => $data,
     ]);
-} catch(Exception $error) {
+} catch (Exception $error) {
+    // Manejo de errores
     header("HTTP/1.1 500 Internal Server Error");
     echo json_encode(['error' => $error->getMessage()]);
 }

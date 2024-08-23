@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "../App.css";
 import logo from "../assets/png/logo.png";
 
@@ -16,37 +17,24 @@ const Home = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const url = register
-      ? "http://localhost/Tamwood-hotel/api/register"
-      : "http://localhost/Tamwood-hotel/api/login";
+  const handleLogin = async () => {
+    const url = "http://localhost/Tamwood-hotel/api/login";
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+    };
 
-    const payload = register
-      ? {
-          name: formData.username,
-          email: formData.email,
-          password: formData.password,
-          role: "c",
-        }
-      : { email: formData.email, password: formData.password };
+    console.log("Login payload being sent: ", payload);
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await axios.post(url, payload);
+      const result = response.data;
 
-      const result = await response.json();
-
-      if (result) {
-        // Navigate to the dashboard
+      if (result.sid) {
+        sessionStorage.setItem("user_id", result.sid);
         window.location.href = "/dashboard";
       } else {
-        alert("Authentication failed. Please try again.");
+        alert(result.error || "Authentication failed. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -54,13 +42,55 @@ const Home = () => {
     }
   };
 
-  function handleModal() {
+  const handleRegister = async () => {
+    const url = "http://localhost/Tamwood-hotel/api/register";
+    const payload = {
+      username: formData.username,
+      email: formData.email,
+      password_hash: formData.password, // Utiliza 'password_hash' como clave
+      role: "c", // Asumiendo que estás usando un valor fijo para 'role'
+    };
+
+    console.log("Register payload being sent: ", payload);
+
+    try {
+      const response = await axios.post(url, payload);
+      const result = response.data;
+
+      if (result.sid) {
+        sessionStorage.setItem("user_id", result.sid);
+        window.location.href = "/dashboard";
+      } else {
+        alert(result.error || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (!formData.email || !formData.password) {
+      alert("Email and password are required");
+      return;
+    }
+
+    if (register) {
+      handleRegister();
+    } else {
+      handleLogin();
+    }
+  };
+
+  const handleModal = () => {
     setModal(!modal);
-  }
+  };
 
   return (
     <>
-      {modal ? (
+      {modal && (
         <div className="modal">
           <div>
             <span>{!register ? "Login" : "Register"}</span>
@@ -74,6 +104,7 @@ const Home = () => {
                     id="username"
                     value={formData.username}
                     onChange={handleInputChange}
+                    required
                   />
                 </div>
               )}
@@ -85,6 +116,7 @@ const Home = () => {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div>
@@ -95,30 +127,21 @@ const Home = () => {
                   id="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <p>
                 {!register ? (
                   <>
                     Don't have an account?{" "}
-                    <a
-                      href="#"
-                      onClick={() => {
-                        setRegister(true);
-                      }}
-                    >
+                    <a href="#" onClick={() => setRegister(true)}>
                       Register here
                     </a>
                   </>
                 ) : (
                   <>
                     Already have an account?{" "}
-                    <a
-                      href="#"
-                      onClick={() => {
-                        setRegister(false);
-                      }}
-                    >
+                    <a href="#" onClick={() => setRegister(false)}>
                       Login here
                     </a>
                   </>
@@ -133,7 +156,7 @@ const Home = () => {
             </form>
           </div>
         </div>
-      ) : null}
+      )}
       <header className="header">
         <div>
           <img src={logo} alt="Tamwood Hotel Logo" />
