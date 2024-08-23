@@ -59,13 +59,6 @@ class Service {
         $this->price = $price;
     }
 
-    public function setCreatedAt() {
-        $this->created_at = $created_at;
-    }
-
-    public function setUpdatedAt() {
-        $this->updated_at = $updated_at;
-    }
 }
 
 ?>

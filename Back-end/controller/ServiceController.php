@@ -52,6 +52,9 @@ class ServiceController {
 
     public function createService() {
         try {
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin' && $role != 'staff') throw new Exception("Failed to create Service.");
+
             $serviceMapper = new ServiceMapper($this->db);
             $input = $_POST;
             
@@ -71,6 +74,9 @@ class ServiceController {
 
     public function updateService() {
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin' && $role != 'staff') throw new Exception("Failed to update Service.");
+
             $serviceMapper = new ServiceMapper($this->db);
             $input = $_POST;
             
@@ -91,6 +97,9 @@ class ServiceController {
 
     public function deleteService() {
         try {
+            $role = $_SESSION['userClass']['role'];
+            if($role!='admin' && $role != 'staff') throw new Exception("Failed to delete booking.");
+
             $serviceMapper = new ServiceMapper($this->db);
             $input = $_POST;
             

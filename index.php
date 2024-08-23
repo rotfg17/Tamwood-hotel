@@ -30,7 +30,8 @@ function route($method, $path) {
     $ROOT_PATH = '/Tamwood-hotel/';
 
     if ($method === 'GET' && $parsedPath === $ROOT_PATH) {
-        echo "index.php";
+        header("Location: login.php");
+        exit;
     } 
     // Login & Register 
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/register') {
@@ -41,11 +42,15 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('login');
     } 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/logout') {
+        $controller = new UserController($db, $method);
+        return $controller->processRequest('logout');
+    } 
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/init-locked') {
         $controller = new UserController($db, $method);
         return $controller->processRequest('init-locked');
     } 
-    // UserController
+    //UserController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
         $controller = new UserController($db, $method);
         return $controller->processRequest('user-list');
