@@ -149,9 +149,11 @@ class UserController{
     }
     public function createUser() {
         try {
-            $role = unserialize($_SESSION['userClass']) -> getRole();
-            if($role!='admin') throw new Exception("No permission");
-            
+            if($_SESSION['userClass']){
+                $role = unserialize($_SESSION['userClass']) -> getRole();
+                if($role!='admin') throw new Exception("No permission");
+            }
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
