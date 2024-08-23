@@ -8,6 +8,7 @@ require_once './Back-end/controller/CommentController.php';
 require_once './Back-end/controller/RoomController.php';
 require_once './Back-end/controller/TransactionController.php';
 require_once './Back-end/controller/ServiceController.php';
+require_once './Back-end/controller/SessionController.php';
 
 function handleCors() {
     // Allow all origins for simplicity, adjust for production environments
@@ -33,7 +34,7 @@ function route($method, $path) {
         header("Location: login.php");
         exit;
     } 
-    //Login & Register 
+    // Login & Register 
     else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/register') {
         $controller = new UserController($db, $method);
         return $controller->processRequest('add-user');
@@ -50,7 +51,6 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('init-locked');
     } 
-    
     //UserController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
         $controller = new UserController($db, $method);
@@ -61,6 +61,10 @@ function route($method, $path) {
         return $controller->processRequest('users');
     } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') {
         $controller = new UserController($db, $method);
+        if($_SESSION['userClass']){
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+        }
         $request = $controller->processRequest('add-user');
         return $request;
     } 
@@ -72,7 +76,7 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('delete-user');
     }
-    //BookingController
+    // BookingController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-list') {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-list');
@@ -97,7 +101,7 @@ function route($method, $path) {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('delete-booking');
     }
-    //Comment
+    // Comment
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comment-list') {
         $controller = new CommentController($db, $method);
         return $controller->processRequest('comment-list');
@@ -117,7 +121,7 @@ function route($method, $path) {
         $controller = new CommentController($db, $method);
         return $controller->processRequest('delete-comment');
     }
-    //RoomController
+    // RoomController
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/room-type') {
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('room-types');
@@ -194,6 +198,13 @@ function route($method, $path) {
         return $request;
     }
 
+    // session
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-session-time') {
+        $controller = new SessionController($db, $method);
+        $request = $controller->processRequest('update-session-time');
+        return $request;
+    }
+
     else {
         header("HTTP/1.1 404 Not Found");
         return ['error' => 'Route not found'];
@@ -208,19 +219,22 @@ try {
     $session = new Session();
     $sessionStatus = $session->getSession();
 
+    // Llamada a la función route
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
     $data = json_decode($response, true);
 
-    // if (isset($data['sid']) && $data['sid'] !== null) {
-    //     $sessionStatus = $session->startSession();
-    // }
+    if (isset($data['sid']) && $data['sid'] !== null) {
+        $sessionStatus = 'active';
+    }
 
+    // Envía la respuesta al cliente
     echo json_encode([
-        'sessionStatus' => $sessionStatus!=null ? $sessionStatus : null,
+        'sessionStatus' => $sessionStatus !== null ? $sessionStatus : null,
         'data' => $data,
     ]);
-} catch(Exception $error) {
+} catch (Exception $error) {
+    // Manejo de errores
     header("HTTP/1.1 500 Internal Server Error");
     echo json_encode(['error' => $error->getMessage()]);
 }

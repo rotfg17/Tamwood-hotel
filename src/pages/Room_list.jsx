@@ -19,11 +19,11 @@ const RoomList = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await fetch('http://localhost/Tamwood-hotel/api/rooms?status=available'); // Cambié la URL a la API correcta
+            const response = await fetch('http://localhost/Tamwood-hotel/api/rooms?status=available');
             if (!response.ok) throw new Error('Error fetching rooms');
             const data = await response.json();
             if (data.error) throw new Error(data.error);
-            setRooms(data.data); // Se asigna directamente para mostrar todas las habitaciones
+            setRooms(data.data); 
         } catch (error) {
             setError(error.message);
         }
@@ -71,7 +71,7 @@ const RoomList = () => {
 
             setShowEditModal(false);
             setSuccessMessage('Room updated successfully!');
-            fetchRooms(); // Refrescar la lista de habitaciones después de la edición
+            fetchRooms(); 
         } catch (error) {
             setError(error.message);
         }

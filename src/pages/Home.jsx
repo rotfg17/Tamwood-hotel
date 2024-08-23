@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 import "../App.css";
 import logo from "../assets/png/logo.png";
@@ -8,8 +9,10 @@ const Home = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: "",
+    password_hash: "",
   });
+  const [error, setError] = useState(""); // Estado para el mensaje de error
+  const [success, setSuccess] = useState(""); // Estado para el mensaje de éxito
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -18,6 +21,18 @@ const Home = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const data = new FormData();
+
+    // Resetear mensajes de error y éxito al enviar el formulario
+    setError("");
+    setSuccess("");
+
+    // Ensure email and password are provided
+    if (!formData.email || !formData.password_hash) {
+      setError("Email and password are required");
+      return;
+    }
+
     const url = register
       ? "http://localhost/Tamwood-hotel/api/register"
       : "http://localhost/Tamwood-hotel/api/login";
@@ -26,31 +41,33 @@ const Home = () => {
       ? {
           name: formData.username,
           email: formData.email,
-          password: formData.password,
+          password: formData.password_hash,
           role: "c",
         }
-      : { email: formData.email, password: formData.password };
+      : { email: formData.email, password: formData.password_hash };
+
+    for (const key in payload) {
+      data.append(key, payload[key]);
+    }
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await axios.post(url, data);
 
-      const result = await response.json();
+      const result = await response.data;
 
-      if (result) {
-        // Navigate to the dashboard
-        window.location.href = "/dashboard";
+      if (result.data.sid) {
+        if (register) {
+          setSuccess("Registration successful! You can now log in.");
+        } else {
+          // Navigate to the dashboard on successful login
+          window.location.href = "/dashboard";
+        }
       } else {
-        alert("Authentication failed. Please try again.");
+        setError(result.error || "Authentication failed. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      setError("An error occurred. Please try again.");
     }
   };
 
@@ -65,6 +82,10 @@ const Home = () => {
           <div>
             <span>{!register ? "Login" : "Register"}</span>
             <form onSubmit={handleSubmit}>
+              {error && <div className="error-message">{error}</div>}{" "}
+              {/* Mostrar el error aquí */}
+              {success && <div className="success-message">{success}</div>}{" "}
+              {/* Mostrar el éxito aquí */}
               {register && (
                 <div>
                   <label htmlFor="username">Username</label>
@@ -85,16 +106,18 @@ const Home = () => {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div>
                 <label htmlFor="password">Password</label>
                 <input
                   type="password"
-                  name="password"
-                  id="password"
-                  value={formData.password}
+                  name="password_hash"
+                  id="password_hash"
+                  value={formData.password_hash}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <p>

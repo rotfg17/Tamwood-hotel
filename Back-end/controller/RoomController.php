@@ -154,24 +154,6 @@ class RoomController {
         return $this->jsonResponse(404, ['message' => 'Not Found']);
     }
 
-    // public function deleteRelatedServices($room_id) {
-    //     $stmt = $this->db->prepare("DELETE FROM booking_services WHERE booking_id IN (SELECT booking_id FROM bookings WHERE room_id = :room_id)");
-    //     $stmt->bindParam(':room_id', $room_id);
-    //     $stmt->execute();
-    // }
-    
-    // public function deleteRelatedBookings($room_id) {
-    //     $stmt = $this->db->prepare("DELETE FROM bookings WHERE room_id = :room_id");
-    //     $stmt->bindParam(':room_id', $room_id);
-    //     $stmt->execute();
-    // }
 
-    // public function deleteRelatedComments($room_id) {
-    //     $stmt = $this->db->prepare("DELETE FROM comments WHERE room_id = :room_id");
-    //     $stmt->bindParam(':room_id', $room_id);
-    //     $stmt->execute();
-    // }
-    
-    
 }
 ?>
