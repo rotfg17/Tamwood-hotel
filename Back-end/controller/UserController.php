@@ -85,7 +85,7 @@ class UserController{
         try {
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-
+            //save audit log :3번이상 실패할 때부터 로그 기록
             //Setting User Class
             $user = new User();
 
@@ -105,6 +105,7 @@ class UserController{
 
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
+                //로그인 성공 시 실패시도 초기화
                 $newUser = $userMapper -> getUserByEmail($user->getEmail());
                 //Set Session
                 $session = new Session;
