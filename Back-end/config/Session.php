@@ -30,7 +30,7 @@ class Session {
         if ($userClass !== null) {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
-                    $sessionStatus = session_id();
+                    $sessionStatus = 'active';
                     $_SESSION['timeout'] = time() + 1000;
                 } else {
                     $this->deleteSession();
