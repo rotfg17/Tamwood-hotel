@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import "../App.css";
 import logo from "../assets/png/logo.png";
 
@@ -9,7 +8,7 @@ const Home = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: "",
+    password_hash: "",
   });
 
   const handleInputChange = (event) => {
@@ -17,80 +16,65 @@ const Home = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleLogin = async () => {
-    const url = "http://localhost/Tamwood-hotel/api/login";
-    const payload = {
-      email: formData.email,
-      password: formData.password,
-    };
-
-    console.log("Login payload being sent: ", payload);
-
-    try {
-      const response = await axios.post(url, payload);
-      const result = response.data;
-
-      if (result.sid) {
-        sessionStorage.setItem("user_id", result.sid);
-        window.location.href = "/dashboard";
-      } else {
-        alert(result.error || "Authentication failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred. Please try again.");
-    }
-  };
-
-  const handleRegister = async () => {
-    const url = "http://localhost/Tamwood-hotel/api/register";
-    const payload = {
-      username: formData.username,
-      email: formData.email,
-      password_hash: formData.password, // Utiliza 'password_hash' como clave
-      role: "c", // Asumiendo que estás usando un valor fijo para 'role'
-    };
-
-    console.log("Register payload being sent: ", payload);
-
-    try {
-      const response = await axios.post(url, payload);
-      const result = response.data;
-
-      if (result.sid) {
-        sessionStorage.setItem("user_id", result.sid);
-        window.location.href = "/dashboard";
-      } else {
-        alert(result.error || "Registration failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred. Please try again.");
-    }
-  };
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (!formData.email || !formData.password) {
+  
+    // Ensure email and password are provided
+    if (!formData.email || !formData.password_hash) {
       alert("Email and password are required");
       return;
     }
-
-    if (register) {
-      handleRegister();
-    } else {
-      handleLogin();
+  
+    const url = register
+      ? "http://localhost/Tamwood-hotel/api/register"
+      : "http://localhost/Tamwood-hotel/api/login";
+  
+    const payload = register
+      ? {
+          name: formData.username,
+          email: formData.email,
+          password_hash: formData.password_hash,
+          role: "c",
+        }
+      : { email: formData.email, password_hash: formData.password_hash };
+  
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      const result = await response.json();
+      console.log("Response from server:", result); // Depuración: Ver el resultado completo
+  
+      if (result.sid) {
+        // Almacenar el sid para su uso posterior
+        sessionStorage.setItem('sid', result.sid);
+        // Navegar al dashboard
+        window.location.href = "http://localhost:5173/Dashboard";
+      } else if (result.error) {
+        // Mostrar el mensaje de error si existe
+        alert(result.error);
+      } else {
+        alert("Authentication failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
     }
   };
+  
 
-  const handleModal = () => {
+  function handleModal() {
     setModal(!modal);
-  };
+  }
 
   return (
     <>
-      {modal && (
+      {modal ? (
         <div className="modal">
           <div>
             <span>{!register ? "Login" : "Register"}</span>
@@ -104,7 +88,6 @@ const Home = () => {
                     id="username"
                     value={formData.username}
                     onChange={handleInputChange}
-                    required
                   />
                 </div>
               )}
@@ -123,9 +106,9 @@ const Home = () => {
                 <label htmlFor="password">Password</label>
                 <input
                   type="password"
-                  name="password"
-                  id="password"
-                  value={formData.password}
+                  name="password_hash"
+                  id="password_hash"
+                  value={formData.password_hash}
                   onChange={handleInputChange}
                   required
                 />
@@ -134,14 +117,24 @@ const Home = () => {
                 {!register ? (
                   <>
                     Don't have an account?{" "}
-                    <a href="#" onClick={() => setRegister(true)}>
+                    <a
+                      href="#"
+                      onClick={() => {
+                        setRegister(true);
+                      }}
+                    >
                       Register here
                     </a>
                   </>
                 ) : (
                   <>
                     Already have an account?{" "}
-                    <a href="#" onClick={() => setRegister(false)}>
+                    <a
+                      href="#"
+                      onClick={() => {
+                        setRegister(false);
+                      }}
+                    >
                       Login here
                     </a>
                   </>
@@ -156,7 +149,7 @@ const Home = () => {
             </form>
           </div>
         </div>
-      )}
+      ) : null}
       <header className="header">
         <div>
           <img src={logo} alt="Tamwood Hotel Logo" />

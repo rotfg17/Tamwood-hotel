@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/../model/User.php';
 
 class Session {
     private $sessionStatus;
@@ -9,10 +8,13 @@ class Session {
     }
 
     public function startSession(User $user) {
-        session_start();
+        // Verificar si una sesión ya está activa antes de iniciar una nueva
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $_SESSION['userClass'] = serialize($user);
-        $_SESSION['timeout'] = time() + 3600;
+        $_SESSION['timeout'] = time() + 3600; // Establecer tiempo de sesión
 
         $this->sessionStatus = session_id();
         return $this->sessionStatus;
@@ -25,15 +27,18 @@ class Session {
     }
 
     public function getSession() {
-         session_start();
+        // Verificar si una sesión ya está activa antes de iniciar una nueva
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $userClass = isset($_SESSION['userClass']) ? unserialize($_SESSION['userClass']) : null;
 
         if ($userClass !== null) {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
-                    $sessionStatus = session_id();
-                    $_SESSION['timeout'] = time() + 1000;
+                    $this->sessionStatus = session_id();
+                    $_SESSION['timeout'] = time() + 1000; // Extender tiempo de sesión
                 } else {
                     $this->deleteSession();
                 }
@@ -45,6 +50,3 @@ class Session {
         return $this->sessionStatus;
     }
 }
-
-
-?>
