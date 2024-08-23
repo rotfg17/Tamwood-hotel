@@ -8,6 +8,7 @@ require_once './Back-end/controller/CommentController.php';
 require_once './Back-end/controller/RoomController.php';
 require_once './Back-end/controller/TransactionController.php';
 require_once './Back-end/controller/ServiceController.php';
+require_once './Back-end/controller/SessionController.php';
 
 function handleCors() {
     // Allow all origins for simplicity, adjust for production environments
@@ -188,6 +189,13 @@ function route($method, $path) {
         return $request;
     }
 
+    // session
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-session-time') {
+        $controller = new SessionController($db, $method);
+        $request = $controller->processRequest('update-session-time');
+        return $request;
+    }
+
     else {
         header("HTTP/1.1 404 Not Found");
         return ['error' => 'Route not found'];
@@ -206,9 +214,9 @@ try {
 
     $data = json_decode($response, true);
 
-    // if (isset($data['sid']) && $data['sid'] !== null) {
-    //     $sessionStatus = $session->startSession();
-    // }
+    if (isset($data['sid']) && $data['sid'] !== null) {
+        $sessionStatus = 'active';
+    }
 
     echo json_encode([
         'sessionStatus' => $sessionStatus!=null ? $sessionStatus : null,
