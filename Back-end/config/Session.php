@@ -25,7 +25,7 @@ class Session {
     }
 
     public function getSession() {
-        session_start();
+         session_start();
 
         $userClass = isset($_SESSION['userClass']) ? unserialize($_SESSION['userClass']) : null;
 
