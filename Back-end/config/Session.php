@@ -1,7 +1,7 @@
 <?php
 
 class Session {
-    public $sessionStatus;
+    private $sessionStatus;
 
     public function getSessionStatus() {
         return $this->sessionStatus;
@@ -16,35 +16,37 @@ class Session {
         $_SESSION['userClass'] = serialize($user);
         $_SESSION['timeout'] = time() + 3600; // Establecer tiempo de sesión
 
-        return session_id();
+        $this->sessionStatus = session_id();
+        return $this->sessionStatus;
     }
 
     public function deleteSession() {
         session_unset();
         session_destroy();
+        $this->sessionStatus = null;
     }
 
     public function getSession() {
-         session_start();
+        // Verificar si una sesión ya está activa antes de iniciar una nueva
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $userClass = isset($_SESSION['userClass']) ? unserialize($_SESSION['userClass']) : null;
 
         if ($userClass !== null) {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
-                    $sessionStatus = session_id();
-                    $_SESSION['timeout'] = time() + 1000;
+                    $this->sessionStatus = session_id();
+                    $_SESSION['timeout'] = time() + 1000; // Extender tiempo de sesión
                 } else {
                     $this->deleteSession();
                 }
             } else {
-                $sessionStatus = $this->startSession();
+                $this->sessionStatus = $this->startSession($userClass);
             }
         }
 
-        return $sessionStatus;
+        return $this->sessionStatus;
     }
 }
-
-
-?>
