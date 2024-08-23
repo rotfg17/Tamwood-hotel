@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/../model/User.php';
-
-class UserMapper {
+require_once __DIR__ . '/../Utils/Paging.php';
+class UserMapper{
     private $conn;
     private $table_name = 'users';
 
-    public function __construct($conn) {
+    public function __construct($conn=null) {
         $this->conn = $conn->getConnection();
     }
     public function getUserTotalCount():int {
@@ -76,19 +76,20 @@ class UserMapper {
         }
     }
     
-    
+
     public function verifyUserbyEmail(string $email):bool {
         $query = "SELECT count(*) as count FROM ".$this->table_name. " WHERE email=:email";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $email);
         $stmt->execute();
-
+            
         $count = $stmt->fetchColumn();
-        return $count == 0;
-    }
+        if($count > 0) return false;
+        else return true;
 
-    public function createUser(User $user): bool {
+    }
+    public function createUser(User $user):bool {
         $query = "INSERT INTO " . $this->table_name . " (
                                                             username,
                                                             password_hash,
@@ -102,13 +103,48 @@ class UserMapper {
                                                             :role
                                                         )";
         $stmt = $this->conn->prepare($query);
-
+    
         $stmt->bindParam(':username', $user->getName());
         $stmt->bindParam(':password_hash', $user->getPasswordHash());
         $stmt->bindParam(':email', $user->getEmail());
         $stmt->bindParam(':role', $user->getRole());
 
-        return $stmt->execute();
+
+        if ($stmt->execute()) {
+            return true;
+            }
+            return false;
+    }
+    public function updateUser(User $user){
+        $query = "UPDATE " . $this->table_name . " 
+                        SET 
+                            username = :name
+                        WHERE 
+                            user_id = :id
+                            ";
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(':name', $user->getName());
+        $stmt->bindParam(':id', $user->getId());
+        
+        if ($stmt->execute()) {
+        return true;
+        }
+        return false;
+    }
+
+    public function deleteUser(int $user_id) {
+        $query = "DELETE FROM " . $this -> table_name . "
+                    WHERE user_id = :id
+                ";
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(":id",$user_id);
+
+        if ($stmt->execute()) {
+            return true;
+            }
+            return false;
     }
 
     public function getPassword(User $user) {
@@ -232,6 +268,25 @@ class UserMapper {
         return false;
     }
 
+    public function updateWalletBalance( Transaction $transaction) {
+        $query = "UPDATE ". $this->table_name ;
+        if($transaction->getTransactionType() == "deposit"){
+            $query .= " SET wallet_balance = wallet_balance + :price";
+        }else if($transaction->getTransactionType() == "payment"){
+            $query .= " SET wallet_balance = wallet_balance - :price";
+        }
+        $query .= " WHERE user_id = :user_id";
+    
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(":price", $transaction->getAmount());
+        $stmt->bindParam(":user_id", $transaction->getUserId());
+    
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
     public function getUserByEmail(string $email):mixed {
         try {
             $query = "SELECT * 
@@ -240,11 +295,14 @@ class UserMapper {
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":email", $email);
             $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);            
+
+            return $user;
         } catch (PDOException $e) {
             error_log("Error in getUserByEmail: " . $e->getMessage());
-            return null;
+            return [];
         }
     }
 }
+
 ?>

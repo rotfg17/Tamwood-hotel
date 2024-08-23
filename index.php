@@ -60,6 +60,10 @@ function route($method, $path) {
         return $controller->processRequest('users');
     } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') {
         $controller = new UserController($db, $method);
+        if($_SESSION['userClass']){
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+        }
         $request = $controller->processRequest('add-user');
         return $request;
     } 

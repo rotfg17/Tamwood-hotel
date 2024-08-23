@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/../model/User.php';
 require_once __DIR__ . '/../mapper/UserMapper.php';
+require_once __DIR__ . '/../Utils/Paging.php';
 
-class UserController {
+class UserController{
     private $db;
     private $requestMethod;
 
@@ -13,11 +14,26 @@ class UserController {
 
     public function processRequest($param) {
         switch ($param) {
+            case 'user-list':
+                $response = $this->getUserList();
+                break;
+            case 'users':
+                $response = $this->getUsers();
+                break;
             case 'add-user':
                 $response = $this->createUser();
                 break;
+            case 'update-user':
+                $response = $this->updateUser();
+                break;
+            case 'delete-user':
+                $response = $this->deleteUser();
+                break;
             case 'login':
                 $response = $this->login();
+                break;
+            case 'logout':
+                $this->Logout();
                 break;
             case 'init-locked':
                 $response = $this->initLocked();
@@ -45,9 +61,11 @@ class UserController {
 
             $user_count = $userMapper->getUserTotalCount();
             $pageObject = new Paging($currPage, $user_count, 20);
-            $result = $userMapper->getUserList($pageObject, $searchString, $searchType);
+
+            $data = ["result"=>$userMapper->getUserList($pageObject, $searchString, $searchType),
+                    "pagination" => $pageObject->getPaginationLinks($_SERVER['REDIRECT_URL'])];
             
-            return $this->jsonResponse(200, $result);
+            return $this->jsonResponse(200, $data);
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage()); // error log
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
@@ -71,8 +89,8 @@ class UserController {
             //Setting User Class
             $user = new User();
 
-            $user->setEmail($input['email']);
-            $user->setPasswordHash($input['password']); // password hash
+            $user-> setEmail($input['email']);
+            $user -> setPasswordHash($input['password']); // password hash
 
             //is locked
             $isLockedCount = $userMapper -> isLocked($user ->getEmail());
@@ -87,11 +105,14 @@ class UserController {
 
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
+                $newUser = $userMapper -> getUserByEmail($user->getEmail());
                 //Set Session
+                $session = new Session;
                 $email = $user->getEmail();
                 $userInfo = $userMapper->getUserByEmail($email);
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
                 $session = new Session();
+
                 $sid = $session->startSession($newUser);
 
                 return $this->jsonResponse(200, ['sid'=> $sid]);
@@ -128,48 +149,35 @@ class UserController {
     }
     public function createUser() {
         try {
-            if($_SESSION['userClass']){
-                $role = unserialize($_SESSION['userClass']) -> getRole();
-                if($role!='admin') throw new Exception("No permission");
-            }
-
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-    
-            // Depura los datos recibidos
-            error_log(print_r($input, true));
-    
-            if (!isset($input['username']) || !isset($input['password_hash']) || !isset($input['email']) || !isset($input['role'])) {
-                return $this->jsonResponse(400, ["error" => "Missing required fields"]);
-            }
-    
-            // Crear usuario con los datos de entrada
+
+            //Setting User Class
             $user = new User();
-            $user->setName($input['username']);
-            $user->setPasswordHash(password_hash($input['password_hash'], PASSWORD_BCRYPT));
-            $user->setEmail($input['email']);
-            $user->setRole($input['role']);
-    
-            // Verificar que el email no esté duplicado
-            if ($userMapper->verifyUserbyEmail($user->getEmail())) {
-                if ($userMapper->createUser($user)) {
+
+            $user -> setName($input['name']);
+            $user -> setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT)); // password hash
+            $user-> setEmail($input['email']);
+            $user -> setRole($input['role']);
+
+            //verify email - duplicate test
+            if($userMapper -> verifyUserbyEmail($user -> getEmail())){
+                if ($userMapper -> createUser($user)) {
                     return $this->jsonResponse(201, ['message' => 'User Created']);
                 } else {
                     throw new Exception("Failed to create user.");
                 }
             } else {
-                return $this->jsonResponse(400, ["error" => "User already exists"]);
+                echo "User already exist";
             }
-    
+
         } catch (Exception $e) {
             error_log("Error creating user: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error creating user: " . $e->getMessage()]);
         }
     }
-    
-    
 
-    public function login() {
+    public function updateUser() {
         try {
             $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin') throw new Exception("No permission");
@@ -177,9 +185,14 @@ class UserController {
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
-            // Verificar que el email y contraseña estén presentes
-            if (!isset($input['email']) || !isset($input['password_hash'])) {
-                return $this->jsonResponse(400, ["error" => "Email and password are required"]);
+            $user = new User();
+            $user -> setName($input['name']);
+            $user-> setId($input['uid']);
+
+            if ($userMapper -> updateUser($user)) {
+                return $this->jsonResponse(201, ['message' => 'User Updated']);
+            } else {
+                throw new Exception("Failed to update user.");
             }
         } catch (Exception $e) {
             error_log("Error updating user: " . $e->getMessage());
@@ -189,6 +202,9 @@ class UserController {
 
     public function deleteUser() {
         try {
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $user_id = $_POST["uid"];
 
@@ -205,6 +221,9 @@ class UserController {
     
     public function initLocked(){
         try {
+            $role = unserialize($_SESSION['userClass']) -> getRole();
+            if($role!='admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
@@ -214,12 +233,11 @@ class UserController {
             if ($userMapper -> initLocked($user->getId())) {
                 return $this->jsonResponse(201, ['message' => 'Locked release']);
             } else {
-                return $this->jsonResponse(401, ["error" => "Invalid credentials"]);
+                throw new Exception("Failed to update user.");
             }
-
-        } catch (PDOException $e) {
-            error_log("Error Login: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error during login: " . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("Error init Lock: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
         }
     }
 
@@ -228,9 +246,12 @@ class UserController {
         http_response_code($statusCode);
         return json_encode($data);
     }
-
+    
     private function notFoundResponse() {
-        return $this->jsonResponse(404, ['message' => 'Not Found']);
+        $response['status_code_header'] = 'HTTP/1.1 404 Not Found';
+        $response['body'] = json_encode(['message' => 'Not Found']);
+        return $response;
     }
 }
+
 ?>
