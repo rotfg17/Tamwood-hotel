@@ -37,7 +37,7 @@ class Session {
         $userClass = isset($_SESSION['userClass']) ? unserialize($_SESSION['userClass']) : null;
         $sessionStatus = null;
 
-        if (session_id() === $_SERVER['HTTP_USER_SID']) {
+        if (isset($_SERVER['HTTP_USER_SID']) && session_id() === $_SERVER['HTTP_USER_SID']) {
             if (isset($_SESSION['timeout'])) {
                 if ($_SESSION['timeout'] > time()) {
                     $sessionStatus = 'active';
