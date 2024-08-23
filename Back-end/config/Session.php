@@ -45,6 +45,8 @@ class Session {
             } else {
                 $this->sessionStatus = $this->startSession($userClass);
             }
+        } else {
+            $this->sessionStatus = null; // Asegurarse de que sessionStatus sea null si no hay sesión activa
         }
 
         return $this->sessionStatus;

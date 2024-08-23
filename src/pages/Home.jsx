@@ -18,17 +18,17 @@ const Home = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+    
     // Ensure email and password are provided
     if (!formData.email || !formData.password_hash) {
       alert("Email and password are required");
       return;
     }
-  
+
     const url = register
       ? "http://localhost/Tamwood-hotel/api/register"
       : "http://localhost/Tamwood-hotel/api/login";
-  
+
     const payload = register
       ? {
           name: formData.username,
@@ -37,7 +37,7 @@ const Home = () => {
           role: "c",
         }
       : { email: formData.email, password_hash: formData.password_hash };
-  
+
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -46,27 +46,20 @@ const Home = () => {
         },
         body: JSON.stringify(payload),
       });
-  
+
       const result = await response.json();
-      console.log("Response from server:", result); // Depuración: Ver el resultado completo
-  
+
       if (result.sid) {
-        // Almacenar el sid para su uso posterior
-        sessionStorage.setItem('sid', result.sid);
-        // Navegar al dashboard
-        window.location.href = "http://localhost:5173/Dashboard";
-      } else if (result.error) {
-        // Mostrar el mensaje de error si existe
-        alert(result.error);
+        // Navigate to the dashboard on successful login
+        window.location.href = "/dashboard";
       } else {
-        alert("Authentication failed. Please try again.");
+        alert(result.error || "Authentication failed. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
       alert("An error occurred. Please try again.");
     }
   };
-  
 
   function handleModal() {
     setModal(!modal);
