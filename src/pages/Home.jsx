@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 import "../App.css";
 import logo from "../assets/png/logo.png";
@@ -20,7 +21,8 @@ const Home = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+    const data = new FormData();
+
     // Resetear mensajes de error y éxito al enviar el formulario
     setError("");
     setSuccess("");
@@ -39,23 +41,21 @@ const Home = () => {
       ? {
           name: formData.username,
           email: formData.email,
-          password_hash: formData.password_hash,
+          password: formData.password_hash,
           role: "c",
         }
-      : { email: formData.email, password_hash: formData.password_hash };
+      : { email: formData.email, password: formData.password_hash };
+
+    for (const key in payload) {
+      data.append(key, payload[key]);
+    }
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await axios.post(url, data);
 
-      const result = await response.json();
+      const result = await response.data;
 
-      if (result.sid) {
+      if (result.data.sid) {
         if (register) {
           setSuccess("Registration successful! You can now log in.");
         } else {
@@ -82,8 +82,10 @@ const Home = () => {
           <div>
             <span>{!register ? "Login" : "Register"}</span>
             <form onSubmit={handleSubmit}>
-              {error && <div className="error-message">{error}</div>} {/* Mostrar el error aquí */}
-              {success && <div className="success-message">{success}</div>} {/* Mostrar el éxito aquí */}
+              {error && <div className="error-message">{error}</div>}{" "}
+              {/* Mostrar el error aquí */}
+              {success && <div className="success-message">{success}</div>}{" "}
+              {/* Mostrar el éxito aquí */}
               {register && (
                 <div>
                   <label htmlFor="username">Username</label>
