@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../model/User.php';
 require_once __DIR__ . '/../mapper/UserMapper.php';
 require_once __DIR__ . '/../Utils/Paging.php';
+require_once __DIR__ . '/../Utils/Util.php';
 
 class UserController{
     private $db;
@@ -83,9 +84,10 @@ class UserController{
     }
     public function Login() {
         try {
+            $util = new Util();
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-            //save audit log :3번이상 실패할 때부터 로그 기록
+
             //Setting User Class
             $user = new User();
 
@@ -96,19 +98,19 @@ class UserController{
             $isLockedCount = $userMapper -> isLocked($user ->getEmail());
             // 3rd lock permanent
             if($isLockedCount > 2){
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." permanent-lock.");
                 return $this->jsonResponse(500, ['fail'=> "permanent-lock"]);
             }else if ($isLockedCount > 0){
                 //check time
                 if(!$userMapper -> getLockedExpired($user->getEmail())) 
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." ".$isLockedCount."th-lock");
                 return $this->jsonResponse(500, ['fail'=> $isLockedCount."th-lock"]);
             }
 
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
-                //로그인 성공 시 실패시도 초기화
                 $newUser = $userMapper -> getUserByEmail($user->getEmail());
                 //Set Session
-                $session = new Session;
                 $email = $user->getEmail();
                 $userInfo = $userMapper->getUserByEmail($email);
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
@@ -116,6 +118,7 @@ class UserController{
 
                 $sid = $session->startSession($newUser);
 
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." Success Login");
                 return $this->jsonResponse(200, ['sid'=> $sid]);
             }else {
                 if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
@@ -130,9 +133,11 @@ class UserController{
                             $userMapper -> updateLockedExpire(10,$user->getEmail());
                             break;
                     }
+                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()." is Locked.");
                     return $this->jsonResponse(500, ['fail'=> "isLocked"]);
                 }
                 $userMapper -> updateFailedLoginAttempts($user -> getEmail());
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." User verify fail");
                 return $this->jsonResponse(500, ["error" => "User verify fail"]);
             }
             
@@ -150,11 +155,7 @@ class UserController{
     }
     public function createUser() {
         try {
-            if($_SESSION['userClass']){
-                $role = unserialize($_SESSION['userClass']) -> getRole();
-                if($role!='admin') throw new Exception("No permission");
-            }
-
+            $util = new Util();
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
 
@@ -164,7 +165,7 @@ class UserController{
             $user -> setName($input['name']);
             $user -> setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT)); // password hash
             $user-> setEmail($input['email']);
-            $user -> setRole($input['role']);
+            $user -> setRole('customer');
 
             //verify email - duplicate test
             if($userMapper -> verifyUserbyEmail($user -> getEmail())){
@@ -174,6 +175,7 @@ class UserController{
                     throw new Exception("Failed to create user.");
                 }
             } else {
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." User already exist");
                 echo "User already exist";
             }
 

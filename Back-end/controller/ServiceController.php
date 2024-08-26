@@ -74,7 +74,7 @@ class ServiceController {
 
     public function updateService() {
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin' && $role != 'staff') throw new Exception("Failed to update Service.");
 
             $serviceMapper = new ServiceMapper($this->db);
@@ -97,7 +97,7 @@ class ServiceController {
 
     public function deleteService() {
         try {
-            $role = $_SESSION['userClass']['role'];
+            $role = unserialize($_SESSION['userClass']) -> getRole();
             if($role!='admin' && $role != 'staff') throw new Exception("Failed to delete booking.");
 
             $serviceMapper = new ServiceMapper($this->db);

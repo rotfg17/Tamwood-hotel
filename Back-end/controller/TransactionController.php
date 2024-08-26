@@ -56,7 +56,7 @@ class TransactionController {
     public function createUserTransaction() {
         try {
             //check session login
-            
+            $util = new Util();
             $input = $_POST;
             
             $transaction = new Transaction();
@@ -75,6 +75,7 @@ class TransactionController {
             //finish transcation
             $this->db->commit();
 
+            $util -> Audit_Gen($_SERVER,true,unserialize($_SESSION['userClass']) -> getEmail()." Filling the wallet.");
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             $this->db->rollback();

@@ -10,6 +10,35 @@ require_once './Back-end/controller/TransactionController.php';
 require_once './Back-end/controller/ServiceController.php';
 require_once './Back-end/controller/SessionController.php';
 
+// Handle CORS
+handleCors();
+
+// Real Request
+try {
+    $session = new Session();
+    $sessionStatus = $session->getSession();
+
+    // Llamada a la función route
+    $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+
+    $data = json_decode($response, true);
+
+    if (isset($data['sid']) && $data['sid'] !== null) {
+        $sessionStatus = 'active';
+    }
+
+    // Envía la respuesta al cliente
+    echo json_encode([
+        'sessionStatus' => $sessionStatus !== null ? $sessionStatus : null,
+        'data' => $data,
+    ]);
+} catch (Exception $error) {
+    // Manejo de errores
+    header("HTTP/1.1 500 Internal Server Error");
+    echo json_encode(['error' => $error->getMessage()]);
+}
+
+
 function handleCors() {
     // Allow all origins for simplicity, adjust for production environments
     header("Access-Control-Allow-Origin: *");
@@ -47,19 +76,19 @@ function route($method, $path) {
         $controller = new UserController($db, $method);
         return $controller->processRequest('logout');
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/init-locked') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/init-locked') { //Use it to unlock
         $controller = new UserController($db, $method);
         return $controller->processRequest('init-locked');
     } 
     //UserController
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user-list') { //Admin's user list & paging
         $controller = new UserController($db, $method);
         return $controller->processRequest('user-list');
     } 
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/users') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/users') {  //Get all users
         $controller = new UserController($db, $method);
         return $controller->processRequest('users');
-    } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') {
+    } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') { //Admin's user addition function
         $controller = new UserController($db, $method);
         if($_SESSION['userClass']){
             $role = unserialize($_SESSION['userClass']) -> getRole();
@@ -68,28 +97,28 @@ function route($method, $path) {
         $request = $controller->processRequest('add-user');
         return $request;
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-user') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-user') { //Admin's user modify function
         $controller = new UserController($db, $method);
         return $controller->processRequest('update-user');
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-user') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-user') { ////Admin's user delete function
         $controller = new UserController($db, $method);
         return $controller->processRequest('delete-user');
     }
     // BookingController
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-list') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-list') { //User/Admin booking list & paging
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-list');
     } 
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/bookings') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/bookings') { ///Get all bookings
         $controller = new BookingController($db, $method);
         return $controller->processRequest('bookings');
     }
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-info') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/booking-info') { //booking list -> booking info(detail page)
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-info');
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-booking') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-booking') { 
         $controller = new BookingController($db, $method);
         return $controller->processRequest('create-booking');
     }
@@ -209,34 +238,6 @@ function route($method, $path) {
         header("HTTP/1.1 404 Not Found");
         return ['error' => 'Route not found'];
     }
-}
-
-// Handle CORS
-handleCors();
-
-// Real Request
-try {
-    $session = new Session();
-    $sessionStatus = $session->getSession();
-
-    // Llamada a la función route
-    $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
-
-    $data = json_decode($response, true);
-
-    if (isset($data['sid']) && $data['sid'] !== null) {
-        $sessionStatus = 'active';
-    }
-
-    // Envía la respuesta al cliente
-    echo json_encode([
-        'sessionStatus' => $sessionStatus !== null ? $sessionStatus : null,
-        'data' => $data,
-    ]);
-} catch (Exception $error) {
-    // Manejo de errores
-    header("HTTP/1.1 500 Internal Server Error");
-    echo json_encode(['error' => $error->getMessage()]);
 }
 
 ?>
