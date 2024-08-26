@@ -174,36 +174,7 @@ class UserMapper{
         }
         return false;
     }
-    public function isLocked(string $email):int{
-        $query = "SELECT is_locked FROM ".$this -> table_name ." WHERE email = :email";
 
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        
-        $isLocked = $stmt->fetchColumn();
-
-        return $isLocked;
-    }
-    public function updateIsLocked(string $email) {
-        $query = "UPDATE " . $this->table_name . " 
-                    SET 
-                        is_locked = is_locked + 1
-                    WHERE 
-                        email =:email
-                        ";
-
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':email', $email);
-        
-        if ($stmt->execute()) {
-        return true;
-        }
-        return false;
-
-    }
     public function updateFailedLoginAttempts(string $email) {
         $query = "UPDATE " . $this->table_name . " 
                     SET 
@@ -254,8 +225,8 @@ class UserMapper{
     //
     public function initLocked(int $user_id) {
         $query = "UPDATE ". $this->table_name ."
-                    SET is_locked = 0,
-                        failed_login_attempts = 0
+                    SET failed_login_attempts = 0,
+                        locked_expire = null
                     WHERE user_id = :user_id";
     
         $stmt = $this->conn->prepare($query);

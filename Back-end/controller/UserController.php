@@ -94,19 +94,6 @@ class UserController{
             $user-> setEmail($input['email']);
             $user -> setPasswordHash($input['password']); // password hash
 
-            //is locked
-            $isLockedCount = $userMapper -> isLocked($user ->getEmail());
-            // 3rd lock permanent
-            if($isLockedCount > 2){
-                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." permanent-lock.");
-                return $this->jsonResponse(500, ['fail'=> "permanent-lock"]);
-            }else if ($isLockedCount > 0){
-                //check time
-                if(!$userMapper -> getLockedExpired($user->getEmail())) 
-                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." ".$isLockedCount."th-lock");
-                return $this->jsonResponse(500, ['fail'=> $isLockedCount."th-lock"]);
-            }
-
             //password verify
             if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
                 $newUser = $userMapper -> getUserByEmail($user->getEmail());
@@ -120,23 +107,44 @@ class UserController{
 
                 $util -> Audit_Gen($_SERVER,true,$user->getEmail()." Success Login");
                 return $this->jsonResponse(200, ['sid'=> $sid]);
+                
             }else {
-                if($userMapper -> getFailedLoginAttempts($user -> getEmail()) > 4 || $userMapper -> isLocked($user ->getEmail()) > 0){
-                    //update locked number
-                    $userMapper -> updateIsLocked($user->getEmail());
-                    //update Expire time
-                    switch ($userMapper -> isLocked($user ->getEmail())) {
-                        case 1:
-                            $userMapper -> updateLockedExpire(4,$user->getEmail());
-                            break;
-                        case 2:
-                            $userMapper -> updateLockedExpire(10,$user->getEmail());
-                            break;
+                //is locked
+                $isFailedCount = $userMapper -> getFailedLoginAttempts($user ->getEmail());
+                if ($isFailedCount == 2){
+                    //check time
+                    if(!$userMapper -> getLockedExpired($user->getEmail())) {
+                        $util -> Audit_Gen($_SERVER,true,$user->getEmail()."1th-lock");
+                        return $this->jsonResponse(500, ['fail'=> "1th-lock"]);
                     }
-                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()." is Locked.");
-                    return $this->jsonResponse(500, ['fail'=> "isLocked"]);
                 }
-                $userMapper -> updateFailedLoginAttempts($user -> getEmail());
+                else if ($isFailedCount == 4){
+                    //check time
+                    if(!$userMapper -> getLockedExpired($user->getEmail())) {
+                        $util -> Audit_Gen($_SERVER,true,$user->getEmail()."2th-lock");
+                        return $this->jsonResponse(500, ['fail'=> "2th-lock"]);
+                    }
+                }
+                else if($isFailedCount == 5){
+                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()." permanent-lock.");
+                    return $this->jsonResponse(500, ['fail'=> "permanent-lock"]);
+                }
+
+                //failed_login_attempts++
+                $userMapper -> updateFailedLoginAttempts($user -> getEmail()); 
+
+                //update Expire time
+                switch ($userMapper -> getFailedLoginAttempts($user -> getEmail())) {
+                    case 2:
+                        $userMapper -> updateLockedExpire(4,$user->getEmail());
+                        break;
+                    case 4:
+                        $userMapper -> updateLockedExpire(10,$user->getEmail());
+                        break;
+                    default:
+                        break;
+                }
+
                 $util -> Audit_Gen($_SERVER,true,$user->getEmail()." User verify fail");
                 return $this->jsonResponse(500, ["error" => "User verify fail"]);
             }
