@@ -30,6 +30,9 @@ class UserController {
             case 'delete-user':
                 $response = $this->deleteUser();
                 break;
+            case 'register':
+                $response = $this->createUser();
+                break;
             case 'login':
                 $response = $this->Login();
                 break;
@@ -92,21 +95,12 @@ class UserController {
             $user->setEmail($input['email']);
             $user->setPasswordHash($input['password']); // password hash
     
-            // Check if user is permanently locked
-            if ($userMapper->isUserLocked($user->getEmail())) {
-                return $this->jsonResponse(403, ["error" => "User account is permanently locked, contact admin"]);
-            }
-    
-            // Check if the user is temporarily locked
-            if (!$userMapper->getLockedExpired($user->getEmail())) {
-                // If locked, return lock message
-                return $this->jsonResponse(403, ["error" => "User account is temporarily locked, please try again later"]);
-            }
-    
             // Password verification
             if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
                 $userInfo = $userMapper->getUserByEmail($user->getEmail());
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
+                $userMapper -> initLocked($newUser->getId());
+                
                 $session = new Session();
     
                 $sid = $session->startSession($newUser);
@@ -114,6 +108,7 @@ class UserController {
                 // Reset failed login attempts after successful login
                 $userMapper->initLocked($userInfo['user_id']);
     
+                $util->Audit_Gen($_SERVER, true, $user->getEmail() . " Success Login");
                 return $this->jsonResponse(200, ['sid' => $sid]);
     
             } else {
@@ -169,7 +164,7 @@ class UserController {
             $user->setName($input['name']);
             $user->setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT));
             $user->setEmail($input['email']);
-            $user->setRole('c');
+            $user->setRole('customer');
     
             // Verify email - duplicate test
             if($userMapper->verifyUserbyEmail($user->getEmail())) {
@@ -185,8 +180,10 @@ class UserController {
                     throw new Exception("Failed to create user.");
                 }
             } else {
+
                 $util->Audit_Gen($_SERVER, true, $user->getEmail()." User already exists");
                 return $this->jsonResponse(409, ['error' => 'User already exists']);
+
             }
     
         } catch (Exception $e) {
@@ -235,6 +232,7 @@ class UserController {
             $user_id = $_POST["uid"];
 
             if ($userMapper->deleteUser($user_id)) {
+
                 return $this->jsonResponse(201, ['message' => 'User Deleted']);
             } else {
                 throw new Exception("Failed to delete user.");
