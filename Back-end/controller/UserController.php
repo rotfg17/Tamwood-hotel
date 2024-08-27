@@ -148,22 +148,24 @@ class UserController {
             $util = new Util();
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-
+    
             // Setting User Class
             $user = new User();
             $user->setName($input['name']);
             $user->setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT));
             $user->setEmail($input['email']);
-            $user->setRole('customer');
-
+            $user->setRole('c');
+    
             // Verify email - duplicate test
             if($userMapper->verifyUserbyEmail($user->getEmail())) {
                 if ($userMapper->createUser($user)) {
-                    // Generate session ID (sid)
-                    $sid = $util->generateSessionId($user);
-
-                    // Return success response with sid
-                    return $this->jsonResponse(201, ['message' => 'User Created', 'sid' => $sid]);
+                   $util->Audit_Gen($_SERVER, true, $user->getEmail()." User created");
+    
+                   // Aquí deberías generar o recuperar el SID
+                   // Supongamos que tienes un método para generarlo o recuperarlo:
+                   $sid = $this->generateSessionID($user);
+    
+                   return $this->jsonResponse(201, ['success' => 'User created successfully.', 'sid' => $sid]);
                 } else {
                     throw new Exception("Failed to create user.");
                 }
@@ -171,12 +173,20 @@ class UserController {
                 $util->Audit_Gen($_SERVER, true, $user->getEmail()." User already exists");
                 return $this->jsonResponse(409, ['error' => 'User already exists']);
             }
-
+    
         } catch (Exception $e) {
             error_log("Error creating user: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error creating user: " . $e->getMessage()]);
         }
     }
+    
+    private function generateSessionID($user) {
+        // Aquí podrías implementar la lógica para generar o recuperar el SID
+        // Ejemplo simple:
+        return session_id(); // o algún otro mecanismo para generar el SID
+    }
+    
+    
 
     public function updateUser() {
         try {
