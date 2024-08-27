@@ -1,47 +1,45 @@
 <?php
 require_once __DIR__ . '/../model/User.php';
 require_once __DIR__ . '/../Utils/Paging.php';
-class UserMapper{
+
+class UserMapper {
     private $conn;
     private $table_name = 'users';
 
     public function __construct($conn=null) {
         $this->conn = $conn->getConnection();
     }
-    public function getUserTotalCount():int {
-        try {//need paging util
-            $query = "SELECT COUNT(*) as count
-                        FROM " . $this->table_name ."";
-        // biding parameter
+
+    public function getUserTotalCount(): int {
+        try {
+            $query = "SELECT COUNT(*) as count FROM " . $this->table_name;
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             
-            $count = $stmt->fetchColumn();
-            return $count;
+            return $stmt->fetchColumn();
         } catch (PDOException $e) {
-            error_log("Error in getUsers: " . $e->getMessage());
+            error_log("Error in getUserTotalCount: " . $e->getMessage());
             return 0;
         }
     }
-    public function getUserList(Paging $paging, string $searchString="", string $searchType =""):array {
-        // Page per row
-        $records_per_page = $paging -> getItemsPerPage();
-        // cal OFFSET 
-        $offset = $paging -> getOffset();
 
-        try {//need paging util
+    public function getUserList(Paging $paging, string $searchString = "", string $searchType = ""): array {
+        $records_per_page = $paging->getItemsPerPage();
+        $offset = $paging->getOffset();
+
+        try {
             $query = "SELECT * FROM " . $this->table_name;
-        if ($searchType=="username")
-            $query .= " WHERE username LIKE '%".$searchString."%'";
-        else if ($searchType=="email")
-            $query .= " WHERE email LIKE '%".$searchString."%'";
-        else if ($searchType=="role")
-            $query .= " WHERE role LIKE '%".$searchString."%'";
-            $query .= " ORDER BY user_id DESC 
-                        LIMIT :limit OFFSET :offset";
+            if ($searchType == "username") {
+                $query .= " WHERE username LIKE :searchString";
+            } else if ($searchType == "email") {
+                $query .= " WHERE email LIKE :searchString";
+            } else if ($searchType == "role") {
+                $query .= " WHERE role LIKE :searchString";
+            }
+            $query .= " ORDER BY user_id DESC LIMIT :limit OFFSET :offset";
         
-        // biding <paramete></paramete>r
             $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':searchString', $searchString, PDO::PARAM_STR);
             $stmt->bindParam(':limit', $records_per_page, PDO::PARAM_INT);
             $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
@@ -52,16 +50,14 @@ class UserMapper{
             }
             return $users;
         } catch (PDOException $e) {
-            error_log("Error in getUsers: " . $e->getMessage());
+            error_log("Error in getUserList: " . $e->getMessage());
             return [];
         }
     }
 
-    public function getUsers():array {
-        try {//need paging util
-            $query = "SELECT * 
-                        FROM " . $this->table_name. 
-                        " ORDER BY user_id DESC";
+    public function getUsers(): array {
+        try {
+            $query = "SELECT * FROM " . $this->table_name . " ORDER BY user_id DESC";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
     
@@ -76,20 +72,17 @@ class UserMapper{
         }
     }
     
-
-    public function verifyUserbyEmail(string $email):bool {
-        $query = "SELECT count(*) as count FROM ".$this->table_name. " WHERE email=:email";
+    public function verifyUserbyEmail(string $email): bool {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE email = :email";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $email);
         $stmt->execute();
             
-        $count = $stmt->fetchColumn();
-        if($count > 0) return false;
-        else return true;
-
+        return $stmt->fetchColumn() > 0 ? false : true;
     }
-    public function createUser(User $user):bool {
+
+    public function createUser(User $user): bool {
         $query = "INSERT INTO " . $this->table_name . " (
                                                             username,
                                                             password_hash,
@@ -114,43 +107,31 @@ class UserMapper{
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':role', $role);
         
-
-
-        if ($stmt->execute()) {
-            return true;
-            }
-            return false;
+        return $stmt->execute();
     }
-    public function updateUser(User $user){
+
+    public function updateUser(User $user): bool {
         $query = "UPDATE " . $this->table_name . " 
                         SET 
                             username = :name
                         WHERE 
-                            user_id = :id
-                            ";
+                            user_id = :id";
         $stmt = $this->conn->prepare($query);
         
         $stmt->bindParam(':name', $user->getName());
         $stmt->bindParam(':id', $user->getId());
         
-        if ($stmt->execute()) {
-        return true;
-        }
-        return false;
+        return $stmt->execute();
     }
 
-    public function deleteUser(int $user_id) {
-        $query = "DELETE FROM " . $this -> table_name . "
-                    WHERE user_id = :id
-                ";
+    public function deleteUser(int $user_id): bool {
+        $query = "DELETE FROM " . $this->table_name . "
+                    WHERE user_id = :id";
         $stmt = $this->conn->prepare($query);
 
-        $stmt->bindParam(":id",$user_id);
+        $stmt->bindParam(":id", $user_id);
 
-        if ($stmt->execute()) {
-            return true;
-            }
-            return false;
+        return $stmt->execute();
     }
 
     public function getPassword(User $user) {
@@ -163,13 +144,10 @@ class UserMapper{
     
         $stmt->execute();
     
-        // Store the Fetchcolumn result in a variable before returning it
-        $passwordHash = $stmt->fetchColumn();
-    
-        return $passwordHash;
+        return $stmt->fetchColumn();
     }
     
-    public function updateLockedExpire(int $hour, string $email) {
+    public function updateLockedExpire(int $hour, string $email): bool {
         $query = "UPDATE ". $this->table_name ."
                     SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
                     WHERE email = :email";
@@ -179,81 +157,114 @@ class UserMapper{
         $stmt->bindParam(":hour", $hour, PDO::PARAM_INT);
         $stmt->bindParam(":email", $email);
     
-        if ($stmt->execute()) {
-            return true;
-        }
-        return false;
+        return $stmt->execute();
     }
 
-    public function updateFailedLoginAttempts(string $email) {
+    public function updateFailedLoginAttempts(string $email): bool {
         $query = "UPDATE " . $this->table_name . " 
                     SET 
                         failed_login_attempts = failed_login_attempts + 1
                     WHERE 
-                        email =:email
-                        ";
+                        email = :email";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':email', $email);
         
-        if ($stmt->execute()) {
-        return true;
-        }
-        return false;
-
+        return $stmt->execute();
     }
 
     public function getFailedLoginAttempts(string $email) {
-        $query = "SELECT failed_login_attempts FROM ".$this -> table_name ." WHERE email = :email";
+        $query = "SELECT failed_login_attempts FROM " . $this->table_name . " WHERE email = :email";
 
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         
-        $fail_num = $stmt->fetchColumn();
-
-        return $fail_num;
+        return $stmt->fetchColumn();
     }
 
-    public function getLockedExpired($email) {
-        $query = "SELECT count(*) FROM ".$this->table_name." WHERE locked_expire < NOW() AND email = :email";
+    public function lockUserPermanently(string $email): bool {
+        $query = "UPDATE " . $this->table_name . " 
+                    SET 
+                        account_locked = 1
+                    WHERE 
+                        email = :email";
+        $stmt = $this->conn->prepare($query);
+    
+        $stmt->bindParam(':email', $email);
+        
+        return $stmt->execute();
+    }
+
+    public function unlockUser(int $user_id): bool {
+        $query = "UPDATE " . $this->table_name . " 
+                    SET 
+                        account_locked = 0, 
+                        failed_login_attempts = 0, 
+                        locked_expire = NULL
+                    WHERE 
+                        user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+    
+        $stmt->bindParam(':user_id', $user_id);
+        
+        return $stmt->execute();
+    }
+
+    public function isUserLocked(string $email): bool {
+        $query = "SELECT account_locked FROM " . $this->table_name . " WHERE email = :email";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function getLockedExpired(string $email): bool {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE locked_expire < NOW() AND email = :email";
     
         $stmt = $this->conn->prepare($query);
     
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         
-        $result = $stmt->fetchColumn();
-        if($result > 0) {
-            return true;
-        } else {
-            return false;
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function getUserByEmail(string $email): mixed {
+        try {
+            $query = "SELECT * 
+                      FROM " . $this->table_name . 
+                      " WHERE email = :email";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":email", $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);            
+        } catch (PDOException $e) {
+            error_log("Error in getUserByEmail: " . $e->getMessage());
+            return [];
         }
     }
 
-    //
-    public function initLocked(int $user_id) {
+    public function initLocked(int $user_id): bool {
         $query = "UPDATE ". $this->table_name ."
                     SET failed_login_attempts = 0,
-                        locked_expire = null
+                        locked_expire = NULL
                     WHERE user_id = :user_id";
     
         $stmt = $this->conn->prepare($query);
     
         $stmt->bindParam(":user_id", $user_id);
     
-        if ($stmt->execute()) {
-            return true;
-        }
-        return false;
+        return $stmt->execute();
     }
 
-    public function updateWalletBalance( Transaction $transaction) {
-        $query = "UPDATE ". $this->table_name ;
-        if($transaction->getTransactionType() == "deposit"){
+    public function updateWalletBalance(Transaction $transaction): bool {
+        $query = "UPDATE ". $this->table_name;
+        if($transaction->getTransactionType() == "deposit") {
             $query .= " SET wallet_balance = wallet_balance + :price";
-        }else if($transaction->getTransactionType() == "payment"){
+        } else if($transaction->getTransactionType() == "payment") {
             $query .= " SET wallet_balance = wallet_balance - :price";
         }
         $query .= " WHERE user_id = :user_id";
@@ -263,26 +274,7 @@ class UserMapper{
         $stmt->bindParam(":price", $transaction->getAmount());
         $stmt->bindParam(":user_id", $transaction->getUserId());
     
-        if ($stmt->execute()) {
-            return true;
-        }
-        return false;
-    }
-    public function getUserByEmail(string $email):mixed {
-        try {
-            $query = "SELECT * 
-            FROM " . $this->table_name. 
-            " WHERE email =:email";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(":email", $email);
-            $stmt->execute();
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);            
-
-            return $user;
-        } catch (PDOException $e) {
-            error_log("Error in getUserByEmail: " . $e->getMessage());
-            return [];
-        }
+        return $stmt->execute();
     }
 }
 
