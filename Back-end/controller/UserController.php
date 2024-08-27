@@ -129,7 +129,7 @@ class UserController{
                 $sid = $session->startSession($newUser);
 
                 $util -> Audit_Gen($_SERVER,true,$user->getEmail()." Success Login");
-                return $this->jsonResponse(200, ['sid'=> $sid]);
+                return $this->jsonResponse(200, ['sid'=> $sid, 'user'-> $newUser]);
                 
             }else {
 
