@@ -107,9 +107,9 @@ class UserController {
     
                 // Reset failed login attempts after successful login
                 $userMapper->initLocked($userInfo['user_id']);
-    
+
                 $util->Audit_Gen($_SERVER, true, $user->getEmail() . " Success Login");
-                return $this->jsonResponse(200, ['sid' => $sid]);
+                return $this->jsonResponse(200, ['sid' => $sid,'user' => $newUser -> display_info()]);
     
             } else {
                 // Handle failed login attempts and lock logic here
