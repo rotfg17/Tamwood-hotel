@@ -89,26 +89,68 @@ class UserController {
     
             // Setting User Class
             $user = new User();
-            $user->setEmail($input['email']);
-            $user->setPasswordHash($input['password']); // password hash
-    
-            // Password verification
-            if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
-                $userInfo = $userMapper->getUserByEmail($user->getEmail());
+
+            $user-> setEmail($input['email']);
+            $user -> setPasswordHash($input['password']); // password hash
+
+            //is locked
+            $isFailedCount = $userMapper -> getFailedLoginAttempts($user ->getEmail());
+            if ($isFailedCount == 2){
+                //check time
+                if(!$userMapper -> getLockedExpired($user->getEmail())) {
+                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()."1th-lock");
+                    return $this->jsonResponse(500, ['fail'=> "1th-lock"]);
+                }
+            }
+            else if ($isFailedCount == 4){
+                //check time
+                if(!$userMapper -> getLockedExpired($user->getEmail())) {
+                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()."2th-lock");
+                    return $this->jsonResponse(500, ['fail'=> "2th-lock"]);
+                }
+            }
+            else if($isFailedCount == 5){
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." permanent-lock.");
+                return $this->jsonResponse(500, ['fail'=> "permanent-lock"]);
+            }
+
+            //password verify
+            if(password_verify($user->getPasswordHash(), $userMapper -> getPassword($user))) {
+                $newUser = $userMapper -> getUserByEmail($user->getEmail());
+                //Set Session
+                $email = $user->getEmail();
+                $userInfo = $userMapper->getUserByEmail($email);
+
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
+                $userMapper -> initLocked($newUser->getId());
+                
                 $session = new Session();
     
                 $sid = $session->startSession($newUser);
-    
-                // Reset failed login attempts after successful login
-                $userMapper->initLocked($userInfo['user_id']);
-    
-                $util->Audit_Gen($_SERVER, true, $user->getEmail() . " Success Login");
-                return $this->jsonResponse(200, ['sid' => $sid]);
-    
-            } else {
-                // Handle failed login attempts and lock logic here
-                return $this->handleFailedLogin($user, $userMapper, $util);
+
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." Success Login");
+                return $this->jsonResponse(200, ['sid'=> $sid]);
+                
+            }else {
+
+                //failed_login_attempts++
+                $userMapper -> updateFailedLoginAttempts($user -> getEmail()); 
+
+                //update Expire time
+                switch ($userMapper -> getFailedLoginAttempts($user -> getEmail())) {
+                    case 2:
+                        $userMapper -> updateLockedExpire(4,$user->getEmail());
+                        break;
+                    case 4:
+                        $userMapper -> updateLockedExpire(10,$user->getEmail());
+                        break;
+                    default:
+                        break;
+                }
+
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." User verify fail");
+                return $this->jsonResponse(500, ["error" => "User verify fail"]);
+
             }
     
         } catch (PDOException $e) {
@@ -175,8 +217,10 @@ class UserController {
                     throw new Exception("Failed to create user.");
                 }
             } else {
+
                 $util->Audit_Gen($_SERVER, true, $user->getEmail()." User already exists");
                 return $this->jsonResponse(409, ['error' => 'User already exists']);
+
             }
     
         } catch (Exception $e) {
@@ -225,6 +269,7 @@ class UserController {
             $user_id = $_POST["uid"];
 
             if ($userMapper->deleteUser($user_id)) {
+
                 return $this->jsonResponse(201, ['message' => 'User Deleted']);
             } else {
                 throw new Exception("Failed to delete user.");

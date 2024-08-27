@@ -56,9 +56,10 @@ class CommentController
 
       $comments_count = $mapper->getCommentTotalCount();
       $pageObject = new Paging($currPage, $comments_count, 20);
-      $result = $mapper->getCommentList($pageObject, $searchString, $searchType);
+      $data = ["result" => $mapper->getCommentList($pageObject, $searchString, $searchType),
+                "pagination" => $pageObject->getPaginationLinks($_SERVER['REDIRECT_URL'])];
 
-      return print_r($this->jsonResponse(200, $result));
+      return $this->jsonResponse(200, $data);
     } catch (PDOException $e) {
       error_log("Error getting comments: " . $e->getMessage()); // error log
       return $this->jsonResponse(500, ["error" => "Error getting comments: " . $e->getMessage()]);
@@ -69,7 +70,7 @@ class CommentController
     try {
       $commentMapper = new CommentMapper($this->db);
       $result = $commentMapper->getComments();
-      return print_r($this->jsonResponse(200, $result));
+      return $this->jsonResponse(200, $result);
     } catch (PDOException $e) {
       error_log("Error getting comments: " . $e->getMessage()); // error log
       return $this->jsonResponse(500, ["error" => "Error getting comments: " . $e->getMessage()]);
@@ -90,7 +91,7 @@ class CommentController
 
 
       if ($commentMapper->createComment($comments)) {
-        return print_r($this->jsonResponse(201, ['message' => 'Comment Created']));
+        return $this->jsonResponse(201, ['message' => 'Comment Created']);
       } else {
         throw new Exception("Failed to create comment.");
       }
@@ -113,7 +114,7 @@ class CommentController
       $comments->setCommentId($input['comment_id']);
 
       if ($commentMapper->updateComment($comments)) {
-        return print_r($this->jsonResponse(201, ['message' => 'Comment Updated']));
+        return $this->jsonResponse(201, ['message' => 'Comment Updated']);
       } else {
         throw new Exception("Failed to update comment.");
       }
@@ -131,7 +132,7 @@ class CommentController
 
       if ($commentMapper -> getCommentbyId($comments_id) > 0) {
         $commentMapper->deleteComment($comments_id);
-        return print_r($this->jsonResponse(201, ['message' => 'Comment Deleted']));
+        return $this->jsonResponse(201, ['message' => 'Comment Deleted']);
       } else {
         throw new Exception("Failed to delete comment.");
       }
