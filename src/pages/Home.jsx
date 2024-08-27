@@ -42,7 +42,7 @@ const Home = () => {
           name: formData.username,
           email: formData.email,
           password: formData.password_hash,
-          role: "c",
+          role: "c",  // Role as 'customer'
         }
       : { email: formData.email, password: formData.password_hash };
   
@@ -52,34 +52,33 @@ const Home = () => {
   
     try {
       const response = await axios.post(url, data);
-      const result = await response.data;
-  
-      if (result.data && result.data.sid) {
+      const result = response.data;
+
+      if (result.error) {
+        // Asignar el mensaje de error a setError para mostrarlo en la interfaz
+        setError(result.error);
+      } else if (result.data && result.data.sid) {
         const sid = result.data.sid;
         sessionStorage.setItem("sid", sid);
+        setSuccess("Login successful");
+        // Redirigir al dashboard según el contexto
         if (register) {
-          setSuccess("Registration successful! You can now log in.");
-          setTimeout(() => {
-            window.location.href = "/client-dashboard";
-          }, 1000);
+          window.location.href = "/customer-dashboard"; // Redirige al dashboard del cliente después del registro
         } else {
-          setSuccess("Login successful");
-          // Navigate to the dashboard on successful login
-          window.location.href = "/dashboard";
+          window.location.href = "/dashboard"; // Redirige al dashboard general después del login
         }
       } else {
-        setError(result.error || "Authentication failed. Please try again.");
-        // Clear the form in case of error
+        setError("Authentication failed. Please try again.");
         setFormData({ username: "", email: "", password_hash: "" });
       }
     } catch (error) {
+      console.log("Caught an error:", error);
+      // Asigna el mensaje de error capturado a setError para mostrarlo en la interfaz
       setError("Invalid email or password. Please check your credentials and try again.");
-      // Clear the form in case of error
       setFormData({ username: "", email: "", password_hash: "" });
     }
   };
   
-
   const handleModal = () => {
     setModal(!modal);
   };
