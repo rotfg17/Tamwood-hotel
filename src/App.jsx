@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { useEffect } from "react";
 import "./App.css";
-import { useSession } from "./hooks/store/user";
+import { useSession } from "./hooks/store/session";
 import Audit_Logs from "./pages/Audit_Logs";
 import Bookings from "./pages/Bookings";
 import Comments from "./pages/Comments";
