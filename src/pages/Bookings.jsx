@@ -7,35 +7,39 @@ const Booking = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
-  const [totalPrice, setTotalPrice] = useState(0);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    fetchRooms();
+    if (checkInDate && checkOutDate) {
+      fetchRooms();
+    }
   }, [checkInDate, checkOutDate]);
 
   const fetchRooms = async () => {
     try {
-      const response = await axios.get('http://localhost/Tamwood-hotel/api/api/booking-info', {
-        params: {
-          checkInDate,
-          checkOutDate,
-        },
-      });
-      setRooms(response.data.rooms || []);
+        const response = await axios.get('http://localhost/Tamwood-hotel/api/available-rooms', {
+            params: {
+                checkInDate,
+                checkOutDate,
+            },
+        });
+        if (response.data.rooms && response.data.rooms.length > 0) {
+            setRooms(response.data.rooms);
+        } else {
+            setRooms([]);
+            setError('No rooms available for the selected dates.');
+        }
     } catch (error) {
-      console.error('Error fetching rooms:', error);
-      setError('Error fetching rooms. Please try again later.');
+        console.error('Error fetching rooms:', error);
+        setError('Error fetching rooms. Please try again later.');
     }
-  };
+};
 
-  const calculateTotalPrice = (room) => {
-    const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
-    const timeDiff = Math.abs(checkOut - checkIn);
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    return room.price_per_night * diffDays;
+
+  const handleRoomSelection = (room) => {
+    setSelectedRoom(room);
+    setError(null); // Clear any previous errors
+    console.log('Room selected:', room);
   };
 
   const handleBooking = async () => {
@@ -45,31 +49,25 @@ const Booking = () => {
     }
 
     try {
-      const calculatedTotalPrice = calculateTotalPrice(selectedRoom);
-      setTotalPrice(calculatedTotalPrice);
-
       const response = await axios.post('http://localhost/Tamwood-hotel/api/create-booking', {
-        user_id: 1, // Assuming a logged-in user with ID 1, adjust this as needed
+        user_id: 1, // Ajusta esto según sea necesario
         room_id: selectedRoom.room_id,
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
-        total_price: calculatedTotalPrice,
         status: 'Booked',
       });
 
       if (response.data.success) {
-        setSuccessMessage('Room booked successfully!');
-        setError(null);
         setSelectedRoom(null);
         setCheckInDate('');
         setCheckOutDate('');
+        setError(null);
       } else {
         setError('Failed to book room. Please try again.');
       }
     } catch (error) {
       console.error('Error booking room:', error);
       setError('An error occurred. Please try again later.');
-      setSuccessMessage('');
     }
   };
 
@@ -77,7 +75,6 @@ const Booking = () => {
     <div className="booking-container">
       <h2>Book a Room</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
       <div className="booking-form">
         <div className="form-row">
           <label>
@@ -107,7 +104,7 @@ const Booking = () => {
             rooms.map(room => (
               <li key={room.room_id}>
                 {room.room_number} - {room.room_type} - ${room.price_per_night}
-                <button onClick={() => setSelectedRoom(room)}>Select</button>
+                <button onClick={() => handleRoomSelection(room)}>Select</button>
               </li>
             ))
           ) : (
@@ -117,7 +114,7 @@ const Booking = () => {
       </div>
       {selectedRoom && (
         <div>
-          <p>Total Price: ${calculateTotalPrice(selectedRoom)}</p>
+          <p>Room Selected: {selectedRoom.room_number}</p>
         </div>
       )}
       <button className="booking-button" onClick={handleBooking}>Book Room</button>

@@ -21,7 +21,12 @@ try {
     // Llamada a la función route
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
-    $data = json_decode($response, true);
+    // Verifica si $response es un string y decodifícalo, o úsalo directamente si ya es un array
+    if (is_string($response)) {
+        $data = json_decode($response, true);
+    } else {
+        $data = $response;
+    }
 
     if (isset($data['sid']) && $data['sid'] !== null) {
         $sessionStatus = 'active';
@@ -37,7 +42,6 @@ try {
     header("HTTP/1.1 500 Internal Server Error");
     echo json_encode(['error' => $error->getMessage()]);
 }
-
 
 function handleCors() {
     // Allow all origins for simplicity, adjust for production environments
@@ -110,6 +114,11 @@ function route($method, $path) {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-list');
     } 
+
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/available-rooms') {
+        $controller = new BookingController($db, $method);
+        return $controller->processRequest('available-rooms');
+    }
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/bookings') { ///Get all bookings
         $controller = new BookingController($db, $method);
         return $controller->processRequest('bookings');
@@ -238,6 +247,7 @@ function route($method, $path) {
         header("HTTP/1.1 404 Not Found");
         return ['error' => 'Route not found'];
     }
+    
 }
 
 ?>
