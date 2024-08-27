@@ -49,7 +49,7 @@ function handleCors() {
     // Specify the allowed methods
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     // Specify the allowed headers
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, user-sid");
     // Handle preflight requests
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         header("HTTP/1.1 200 OK");
