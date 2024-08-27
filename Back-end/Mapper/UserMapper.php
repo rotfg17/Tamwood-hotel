@@ -149,29 +149,39 @@ class UserMapper {
     
     public function updateLockedExpire(int $hour, string $email): bool {
         $query = "UPDATE ". $this->table_name ."
-                    SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
-                    WHERE email = :email";
-    
+                     SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
+                     WHERE email = :email";
+     
         $stmt = $this->conn->prepare($query);
-    
+     
         $stmt->bindParam(":hour", $hour, PDO::PARAM_INT);
         $stmt->bindParam(":email", $email);
-    
         return $stmt->execute();
     }
+    
 
     public function updateFailedLoginAttempts(string $email): bool {
         $query = "UPDATE " . $this->table_name . " 
-                    SET 
-                        failed_login_attempts = failed_login_attempts + 1
-                    WHERE 
-                        email = :email";
+                     SET 
+                         failed_login_attempts = failed_login_attempts + 1
+                     WHERE 
+                         email = :email";
         $stmt = $this->conn->prepare($query);
-
+    
         $stmt->bindParam(':email', $email);
-        
-        return $stmt->execute();
+        $result = $stmt->execute();
+    
+        if (!$result) {
+            error_log("Failed to update failed_login_attempts for email: " . $email);
+        } else {
+            error_log("Successfully updated failed_login_attempts for email: " . $email);
+        }
+    
+        return $result;
     }
+    
+    
+    
 
     public function getFailedLoginAttempts(string $email) {
         $query = "SELECT failed_login_attempts FROM " . $this->table_name . " WHERE email = :email";
@@ -186,16 +196,17 @@ class UserMapper {
 
     public function lockUserPermanently(string $email): bool {
         $query = "UPDATE " . $this->table_name . " 
-                    SET 
-                        account_locked = 1
-                    WHERE 
-                        email = :email";
+                     SET 
+                         is_locked = 1
+                     WHERE 
+                         email = :email";
         $stmt = $this->conn->prepare($query);
-    
+     
         $stmt->bindParam(':email', $email);
-        
         return $stmt->execute();
     }
+    
+    
 
     public function unlockUser(int $user_id): bool {
         $query = "UPDATE " . $this->table_name . " 
@@ -213,13 +224,23 @@ class UserMapper {
     }
 
     public function isUserLocked(string $email): bool {
-        $query = "SELECT account_locked FROM " . $this->table_name . " WHERE email = :email";
+        $query = "SELECT is_locked FROM " . $this->table_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         
-        return (bool) $stmt->fetchColumn();
+        $lockedStatus = $stmt->fetchColumn();
+        
+        error_log("Account locked status for " . $email . ": " . $lockedStatus); // Depuración
+    
+        if ($lockedStatus === false) {
+            error_log("No user found with email: " . $email);
+            return false;
+        }
+    
+        return (bool) $lockedStatus;
     }
+    
 
     public function getLockedExpired(string $email): bool {
         $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE locked_expire < NOW() AND email = :email";
