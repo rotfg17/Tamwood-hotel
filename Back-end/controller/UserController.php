@@ -30,6 +30,9 @@ class UserController {
             case 'delete-user':
                 $response = $this->deleteUser();
                 break;
+            case 'register':
+                $response = $this->createUser();
+                break;
             case 'login':
                 $response = $this->Login();
                 break;
@@ -201,7 +204,7 @@ class UserController {
             $user->setName($input['name']);
             $user->setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT));
             $user->setEmail($input['email']);
-            $user->setRole('c');
+            $user->setRole('customer');
     
             // Verify email - duplicate test
             if($userMapper->verifyUserbyEmail($user->getEmail())) {
