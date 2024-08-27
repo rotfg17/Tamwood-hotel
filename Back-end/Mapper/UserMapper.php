@@ -231,8 +231,6 @@ class UserMapper {
         $stmt->execute();
         
         $lockedStatus = $stmt->fetchColumn();
-        
-        // Registro de depuración para verificar el estado del bloqueo
         error_log("Account locked status for " . $email . ": " . $lockedStatus);
     
         return $lockedStatus == 1;

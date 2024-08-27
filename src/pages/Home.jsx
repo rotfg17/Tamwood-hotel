@@ -63,9 +63,9 @@ const Home = () => {
         setSuccess("Login successful");
         // Redirigir al dashboard según el contexto
         if (register) {
-          window.location.href = "/customer-dashboard"; // Redirige al dashboard del cliente después del registro
+          window.location.href = "/customer-dashboard";
         } else {
-          window.location.href = "/dashboard"; // Redirige al dashboard general después del login
+          window.location.href = "/dashboard";
         }
       } else {
         setError("Authentication failed. Please try again.");
@@ -73,8 +73,7 @@ const Home = () => {
       }
     } catch (error) {
       console.log("Caught an error:", error);
-      // Asigna el mensaje de error capturado a setError para mostrarlo en la interfaz
-      setError("Invalid email or password. Please check your credentials and try again.");
+      setError("Email or password incorrect. Please try again.");
       setFormData({ username: "", email: "", password_hash: "" });
     }
   };

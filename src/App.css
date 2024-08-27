@@ -416,14 +416,11 @@ tr th {
 /* styles for rooms files*/
 .room-form {
   max-width: 600px;
-  margin: 20px auto;
+  margin: 0 auto;
   padding: 20px;
-  /* border: 1px solid #ddd; */
-  border-radius: 10px;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
-    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
-    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-  /* background-color: #f9f9f9; */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
 }
 
 .form-row {
@@ -559,3 +556,110 @@ tr th {
   color: #FFFFFF;
   margin-bottom: 10px;
 }
+
+
+/* Booking style  */
+
+.booking-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.booking-container h2 {
+  text-align: center;
+  color: #333;
+}
+
+.booking-form {
+  margin-top: 20px;
+}
+
+.booking-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+.booking-form input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.available-rooms {
+  margin-top: 20px;
+}
+
+.available-rooms h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.available-rooms ul {
+  list-style: none;
+  padding: 0;
+}
+
+.available-rooms li {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+}
+
+.available-rooms button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
+
+.available-rooms button:hover {
+  background-color: #0056b3;
+}
+
+.booking-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.booking-button:hover {
+  background-color: #0056b3;
+}
+
+.booking-message {
+  margin-top: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.booking-message.success {
+  color: #28a745;
+}
+
+.booking-message.error {
+  color: #dc3545;
+}
+
