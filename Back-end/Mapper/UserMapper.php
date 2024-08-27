@@ -104,10 +104,16 @@ class UserMapper{
                                                         )";
         $stmt = $this->conn->prepare($query);
     
-        $stmt->bindParam(':username', $user->getName());
-        $stmt->bindParam(':password_hash', $user->getPasswordHash());
-        $stmt->bindParam(':email', $user->getEmail());
-        $stmt->bindParam(':role', $user->getRole());
+        $username = $user->getName();
+        $password_hash = $user->getPasswordHash();
+        $email = $user->getEmail();
+        $role = $user->getRole();
+        
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':password_hash', $password_hash);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':role', $role);
+        
 
 
         if ($stmt->execute()) {
@@ -148,17 +154,21 @@ class UserMapper{
     }
 
     public function getPassword(User $user) {
-        $query = "SELECT password_hash FROM ".$this -> table_name ." WHERE email = :email";
-
+        $query = "SELECT password_hash FROM " . $this->table_name . " WHERE email = :email";
+    
         $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':email', $user->getEmail());
+    
+        $email = $user->getEmail();
+        $stmt->bindParam(':email', $email);
+    
         $stmt->execute();
-        
-        $pass=$stmt->fetchColumn();
-
-        return $pass;
+    
+        // Store the Fetchcolumn result in a variable before returning it
+        $passwordHash = $stmt->fetchColumn();
+    
+        return $passwordHash;
     }
+    
     public function updateLockedExpire(int $hour, string $email) {
         $query = "UPDATE ". $this->table_name ."
                     SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)

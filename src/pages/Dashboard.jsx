@@ -1,26 +1,28 @@
 import { useState } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faWallet, faBed, faCalendarCheck, faConciergeBell, faComments, faFileAlt, faClock, faBars, faCog, faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import '../App.css'; //Make sure you import the correct CSS file
+import '../App.css'; // Asegúrate de importar el archivo CSS correcto
 
 const Dashboard = () => {
   const [isSettingsMenuVisible, setSettingsMenuVisible] = useState(false);
   const [isNotificationsMenuVisible, setNotificationsMenuVisible] = useState(false);
   const [isProfileMenuVisible, setProfileMenuVisible] = useState(false);
 
+  const navigate = useNavigate(); // Hook para redireccionar al usuario
+
   const handleHamburgerClick = () => {
     const sidebar = document.querySelector('.dashboard');
     const topBar = document.querySelector('.top-bar');
     const isCollapsed = sidebar.classList.toggle('collapsed');
 
-    // Adjust top-bar width and position based on sidebar state
+    // Ajustar la barra superior con base en el estado del sidebar
     if (isCollapsed) {
-      topBar.style.left = '100px'; // Adjust to width of collapsed sidebar
-      topBar.style.width = 'calc(100% - 120px)'; // Adjust width to fit
+      topBar.style.left = '100px'; // Ajuste al ancho de la barra lateral colapsada
+      topBar.style.width = 'calc(100% - 120px)'; // Ajustar ancho
     } else {
-      topBar.style.left = '230px'; // Original width of the sidebar
-      topBar.style.width = 'calc(100% - 250px)'; // Adjust width to fit
+      topBar.style.left = '230px'; // Ancho original de la barra lateral
+      topBar.style.width = 'calc(100% - 250px)'; // Ajustar ancho
     }
   };
 
@@ -40,6 +42,12 @@ const Dashboard = () => {
     setProfileMenuVisible(!isProfileMenuVisible);
     setSettingsMenuVisible(false);
     setNotificationsMenuVisible(false);
+  };
+
+  const handleLogout = () => {
+    // Aquí puedes limpiar cualquier token de autenticación o datos de sesión
+    sessionStorage.clear(); // Ejemplo para limpiar sessionStorage, ajusta según tu implementación
+    navigate('/'); // Redirige a la página de inicio de sesión
   };
 
   return (
@@ -78,7 +86,7 @@ const Dashboard = () => {
             <div className="profile-menu">
               <ul>
                 <li><Link to="/profile/view">View Profile</Link></li>
-                <li><Link to="/profile/edit">Log Out</Link></li>
+                <li onClick={handleLogout}>Log Out</li> {/* Logout usando la función */}
               </ul>
             </div>
           )}

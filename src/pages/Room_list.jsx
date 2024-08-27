@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const RoomList = () => {
     const [rooms, setRooms] = useState([]);
@@ -16,6 +17,18 @@ const RoomList = () => {
         description: '',
         status: ''
     });
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const sid = sessionStorage.getItem('sid');
+        if (!sid) {
+            // Redirect to login page if no SID is found
+            navigate('/');
+            return;
+        }
+
+        fetchRooms();
+    }, []);
 
     const fetchRooms = async () => {
         try {
@@ -99,15 +112,11 @@ const RoomList = () => {
 
             setShowDeleteModal(false);
             setSuccessMessage('Room deleted successfully!');
-            fetchRooms(); // Refrescar la lista de habitaciones después de la eliminación
+            fetchRooms(); // Refresh room list after deletion
         } catch (error) {
             setError(error.message);
         }
     };
-
-    useEffect(() => {
-        fetchRooms();
-    }, []);
 
     return (
         <div className="transaction-container">
@@ -214,7 +223,7 @@ const RoomList = () => {
                     <div className="modal-content">
                         <span className="close" onClick={() => setShowDeleteModal(false)}>&times;</span>
                         <h2>Delete Room</h2>
-                        <p>¿Estás seguro que quieres eliminar la habitación {selectedRoom?.room_number}?</p>
+                        <p>Are you sure you want to delete room {selectedRoom?.room_number}?</p>
                         <button onClick={handleDeleteConfirm}>Confirm</button>
                         <button onClick={() => setShowDeleteModal(false)}>Cancel</button>
                     </div>

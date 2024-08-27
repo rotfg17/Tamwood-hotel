@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@fontsource/poppins"; // Defaults to weight 400
 
 import Dashboard from "./pages/Dashboard";
@@ -15,6 +15,12 @@ import Sessions from "./pages/Sessions";
 import NoPage from "./pages/NoPage";
 import "./App.css";
 
+// Protected route component to check for SID
+const ProtectedRoute = ({ element }) => {
+  const sid = sessionStorage.getItem('sid');
+  return sid ? element : <Navigate to="/" />;
+};
+
 function App() {
   return (
     <div className="grid-container">
@@ -25,17 +31,21 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />}>
-            <Route path="users" element={<Users />} />
-            <Route path="wallet" element={<Wallet />} />
-            <Route path="rooms" element={<Rooms />} />
-            <Route path="roomList" element={<RoomList />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="services" element={<Services />} />
-            <Route path="comments" element={<Comments />} />
-            <Route path="audit_logs" element={<Audit_Logs />} />
-            <Route path="sessions" element={<Sessions />} />
+          
+          {/* Protect all dashboard-related routes */}
+          <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />}>
+            <Route path="users" element={<ProtectedRoute element={<Users />} />} />
+            <Route path="wallet" element={<ProtectedRoute element={<Wallet />} />} />
+            <Route path="rooms" element={<ProtectedRoute element={<Rooms />} />} />
+            <Route path="roomList" element={<ProtectedRoute element={<RoomList />} />} />
+            <Route path="bookings" element={<ProtectedRoute element={<Bookings />} />} />
+            <Route path="services" element={<ProtectedRoute element={<Services />} />} />
+            <Route path="comments" element={<ProtectedRoute element={<Comments />} />} />
+            <Route path="audit_logs" element={<ProtectedRoute element={<Audit_Logs />} />} />
+            <Route path="sessions" element={<ProtectedRoute element={<Sessions />} />} />
           </Route>
+
+          {/* Catch-all route for undefined paths */}
           <Route path="*" element={<NoPage />} />
         </Routes>
       </BrowserRouter>
