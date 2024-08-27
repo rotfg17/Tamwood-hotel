@@ -21,6 +21,15 @@ class User {
         $this->failed_login_attempt = $failed_login_attempt;
     }
 
+    function display_info():array{
+        $outputArray = [];
+        foreach($this as $key=>$val){
+            if($key == "password_hash") continue;
+            $outputArray += [$key=>$val];
+        }
+        return $outputArray;
+    }
+
     // Getters
     public function getId() {
         return $this->id;

@@ -59,7 +59,11 @@ const Home = () => {
         setError(result.error);
       } else if (result.data && result.data.sid) {
         const sid = result.data.sid;
+        const user = result.data.user;
+
         sessionStorage.setItem("sid", sid);
+        sessionStorage.setItem("user", user);
+
         setSuccess("Login successful");
         // Redirigir al dashboard según el contexto
         if (register) {
