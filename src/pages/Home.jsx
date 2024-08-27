@@ -22,34 +22,34 @@ const Home = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData();
-  
+
     // Reset error and success messages when submitting the form
     setError("");
     setSuccess("");
-  
+
     // Ensure that email and password are provided
     if (!formData.email || !formData.password_hash) {
       setError("Email and password are required");
       return;
     }
-  
+
     const url = register
       ? "http://localhost/Tamwood-hotel/api/register"
       : "http://localhost/Tamwood-hotel/api/login";
-  
+
     const payload = register
       ? {
           name: formData.username,
           email: formData.email,
           password: formData.password_hash,
-          role: "c",  // Role as 'customer'
+          role: "c", // Role as 'customer'
         }
       : { email: formData.email, password: formData.password_hash };
-  
+
     for (const key in payload) {
       data.append(key, payload[key]);
     }
-  
+
     try {
       const response = await axios.post(url, data);
       const result = response.data;
@@ -59,7 +59,7 @@ const Home = () => {
         setError(result.error);
       } else if (result.data && result.data.sid) {
         const sid = result.data.sid;
-        const user = result.data.user;
+        const user = JSON.stringify(result.data.user);
 
         sessionStorage.setItem("sid", sid);
         sessionStorage.setItem("user", user);
@@ -81,7 +81,7 @@ const Home = () => {
       setFormData({ username: "", email: "", password_hash: "" });
     }
   };
-  
+
   const handleModal = () => {
     setModal(!modal);
   };
