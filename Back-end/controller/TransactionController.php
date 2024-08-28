@@ -58,7 +58,7 @@ class TransactionController {
             //check session login
             $util = new Util();
             $input = $_POST;
-            
+
             $transaction = new Transaction();
             $transaction->setUserId($input['user_id']);
             $transaction->setTransactionType($input['transaction_type']);
@@ -80,7 +80,7 @@ class TransactionController {
         } catch (PDOException $e) {
             $this->db->rollback();
             error_log("Error getting Transactions: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error getting Transactions: " . $e->getMessage()]);
+            return $this->jsonResponse(500, ["error" => "user_id".$input['user_id']."Error getting Transactions: " . $e->getMessage()]);
         }
     }
 

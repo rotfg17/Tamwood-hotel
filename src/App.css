@@ -513,6 +513,45 @@ tr th {
   color: #ffffff;
 }
 
+/* styles for User*/
+.user-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.user-table th {
+  border-bottom: 1px solid #ccc;
+}
+
+.user-table tbody tr:hover {
+  background-color: #ccc;
+}
+
+.user-table td {
+  color: #111;
+}
+
+.user-container h2 {
+  text-align: center;
+  color: #111;
+}
+
 /* Estilos generales para el modal */
 .modal {
   position: fixed;

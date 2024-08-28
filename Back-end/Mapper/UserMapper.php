@@ -24,22 +24,23 @@ class UserMapper {
     }
 
     public function getUserList(Paging $paging, string $searchString = "", string $searchType = ""): array {
-        $records_per_page = $paging->getItemsPerPage();
-        $offset = $paging->getOffset();
+        // Page per row
+        $records_per_page = $paging -> getItemsPerPage();
+        // cal OFFSET 
+        $offset = $paging -> getOffset();
 
-        try {
+        try {//need paging util
             $query = "SELECT * FROM " . $this->table_name;
-            if ($searchType == "username") {
-                $query .= " WHERE username LIKE :searchString";
-            } else if ($searchType == "email") {
-                $query .= " WHERE email LIKE :searchString";
-            } else if ($searchType == "role") {
-                $query .= " WHERE role LIKE :searchString";
-            }
-            $query .= " ORDER BY user_id DESC LIMIT :limit OFFSET :offset";
+        if ($searchType=="username")
+            $query .= " WHERE username LIKE '%".$searchString."%'";
+        else if ($searchType=="email")
+            $query .= " WHERE email LIKE '%".$searchString."%'";
+        else if ($searchType=="role")
+            $query .= " WHERE role LIKE '%".$searchString."%'";
+            $query .= " ORDER BY user_id DESC 
+                        LIMIT :limit OFFSET :offset";
         
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':searchString', $searchString, PDO::PARAM_STR);
             $stmt->bindParam(':limit', $records_per_page, PDO::PARAM_INT);
             $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
@@ -50,7 +51,7 @@ class UserMapper {
             }
             return $users;
         } catch (PDOException $e) {
-            error_log("Error in getUserList: " . $e->getMessage());
+            error_log("Error in getUsers: " . $e->getMessage());
             return [];
         }
     }
