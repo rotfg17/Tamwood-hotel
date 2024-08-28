@@ -16,12 +16,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../App.css"; // Asegúrate de importar el archivo CSS correcto
-import { useSession } from "../hooks/store/session";
 
 const Dashboard = () => {
-  const { user, sid } = useSession();
-  console.log(user, sid);
-
   const [isSettingsMenuVisible, setSettingsMenuVisible] = useState(false);
   const [isNotificationsMenuVisible, setNotificationsMenuVisible] =
     useState(false);

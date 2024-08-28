@@ -68,9 +68,18 @@ class CommentMapper{
 
     public function getComments() {
         try {//need paging util
-            $query = "SELECT * 
-                        FROM " . $this->table_name. 
-                        " ORDER BY comment_id DESC";
+            $query = "SELECT
+                    comments.*,
+                    users.username,
+                    rooms.room_number,
+                    rooms.room_type
+                FROM 
+                    comments
+                JOIN 
+                    users ON comments.user_id = users.user_id
+                JOIN 
+                    rooms ON comments.room_id = rooms.room_id
+                ORDER BY comments.comment_id DESC";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
     
