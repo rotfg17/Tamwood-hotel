@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useSession } from "../hooks/store/session";
 
 const Users = () => {
-  const [modal, setModal] = useState(false);
   const { user, sid } = useSession();
+
+  const [modal, setModal] = useState(false);
+  const [userInfo, setUserInfo] = useState();
   const [users, setUsers] = useState([]);
   const [paging, setPaging] = useState(null);
   const [error, setError] = useState(null);
@@ -20,16 +22,42 @@ const Users = () => {
   const [newRole, setNewRole] = useState("customer");
 
   useEffect(() => {
+    if (user && user.role === "customer") {
+      fetchUser();
+    }
+
     fetchUsers();
-  }, [currentPage, searchType, searchString]);
+  }, [user, currentPage, searchType, searchString]);
+
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost/Tamwood-hotel/api/user?user_id=${user.id}`,
+        {
+          headers: {
+            "user-sid": sid,
+          },
+        }
+      );
+
+      const data = response.data;
+      setUserInfo(data.data);
+    } catch (error) {
+      console.log(error);
+      setError("Failed to fetch users.");
+    }
+  };
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`http://localhost/Tamwood-hotel/api/user-list?currentPage=${currentPage}&searchType=${searchType}&searchString=${searchString}`, {
-        headers: {
-          'user-sid': sid
+      const response = await axios.get(
+        `http://localhost/Tamwood-hotel/api/user-list?currentPage=${currentPage}&searchType=${searchType}&searchString=${searchString}`,
+        {
+          headers: {
+            "user-sid": sid,
+          },
         }
-      });
+      );
       const data = response.data;
       setUsers(data.data.result);
       setPaging(data.data.pagination);
@@ -42,14 +70,18 @@ const Users = () => {
   const handleUnlock = async (event, id) => {
     event.preventDefault();
     const formData = new FormData();
-    formData.append('uid', id);
+    formData.append("uid", id);
 
     try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/init-locked', formData, {
-        headers: {
-          'user-sid': sid
+      const response = await axios.post(
+        "http://localhost/Tamwood-hotel/api/init-locked",
+        formData,
+        {
+          headers: {
+            "user-sid": sid,
+          },
         }
-      });
+      );
       if (response.data && response.data.message) {
         setSuccess(response.data.message);
         fetchUsers(); // Refrescar la lista de usuarios
@@ -59,6 +91,34 @@ const Users = () => {
     } catch (error) {
       console.log(error);
       setError("An error occurred while unlocking the user.");
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append("user_id", user.id);
+    formData.append("transaction_type", "deposit");
+    formData.append("amount", amount);
+    formData.append("description", "test");
+    try {
+      const response = await axios.post(
+        "http://localhost/Tamwood-hotel/api/create-transaction",
+        formData,
+        {
+          headers: {
+            "user-sid": sid,
+          },
+        }
+      );
+      if (response.data && response.data.message) {
+        setSuccess(response.data.message);
+      } else {
+        setError("Failed to add amount to the wallet.");
+      }
+    } catch (error) {
+      console.log("Caught an error:", error);
+      setError("Failed to add amount to the wallet.");
     }
   };
 
@@ -78,16 +138,20 @@ const Users = () => {
       username: newUsername,
       email: newEmail,
       password: newPassword,
-      role: newRole
+      role: newRole,
     };
 
     try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/add-user', formData, {
-        headers: {
-          'user-sid': sid,
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        "http://localhost/Tamwood-hotel/api/add-user",
+        formData,
+        {
+          headers: {
+            "user-sid": sid,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (response.data && response.data.message) {
         setSuccess(response.data.message);
@@ -104,32 +168,45 @@ const Users = () => {
 
   return (
     <>
-      {user?.role === 'customer' &&
+      {user?.role === "customer" && (
         <div className="user-container">
           <h2>Users</h2>
+          {userInfo && (
+            <div>
+              <div>Name: {userInfo.username}</div>
+              <div>Email: {userInfo.email}</div>
+              <div>Wallet: {userInfo.wallet_balance}</div>
+            </div>
+          )}
           <label>Filling Wallet</label>
           <input
             type="text"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
-          <button type="submit" onClick={handleSubmit}>Charging</button>
+          <button type="submit" onClick={handleSubmit}>
+            Charging
+          </button>
           {success && <div className="success-message">{success}</div>}
           {error && <div className="error-message">{error}</div>}
         </div>
-      }
-      {user?.role === 'admin' &&
+      )}
+      {user?.role === "admin" && (
         <div className="user-container">
-          <div className="user-controls">
-            <input 
-              type="text" 
-              value={searchString} 
-              onChange={(e) => setSearchString(e.target.value)} 
+          <div>
+            <input
+              type="text"
+              value={searchString}
+              onChange={(e) => setSearchString(e.target.value)}
               placeholder="Search users"
               className="search-input"
             />
-            <button onClick={fetchUsers} className="search-button">Search</button>
-            <button onClick={handleModal} className="add-user-button">Add User</button>
+            <button onClick={fetchUsers} className="search-button">
+              Search
+            </button>
+            <button onClick={handleModal} className="add-user-button">
+              Add User
+            </button>
           </div>
           <table className="user-table">
             <thead>
@@ -155,11 +232,29 @@ const Users = () => {
                     <td>{user_row.username}</td>
                     <td>{user_row.email}</td>
                     <td>{user_row.role}</td>
-                    <td>{user_row.is_locked === 1 ? <button onClick={(e) => handleUnlock(e, user_row.user_id)}>Unlock</button> : '-'}</td>
+                    <td>
+                      {user_row.is_locked === 1 ? (
+                        <button
+                          onClick={(e) => handleUnlock(e, user_row.user_id)}
+                        >
+                          Unlock
+                        </button>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                     <td>{user_row.failed_login_attempts}</td>
                     <td>{user_row.wallet_balance}</td>
                     <td>{user_row.created_at}</td>
-                    <td>{user_row.username.includes('__DELETED') ? '-' : <button onClick={() => handleDelete(user_row.user_id)}>Delete</button>}</td>
+                    <td>
+                      {user_row.username.includes("__DELETED") ? (
+                        "-"
+                      ) : (
+                        <button onClick={() => handleDelete(user_row.user_id)}>
+                          Delete
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
@@ -167,7 +262,7 @@ const Users = () => {
           </table>
           {paging && <div className="paging">{paging}</div>}
         </div>
-      }
+      )}
 
       {modal && (
         <div className="modal">
@@ -175,29 +270,29 @@ const Users = () => {
             <h2>Add New User</h2>
             <form onSubmit={handleAddUser}>
               <label>Username</label>
-              <input 
-                type="text" 
-                value={newUsername} 
-                onChange={(e) => setNewUsername(e.target.value)} 
+              <input
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
                 required
               />
               <label>Email</label>
-              <input 
-                type="email" 
-                value={newEmail} 
-                onChange={(e) => setNewEmail(e.target.value)} 
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
                 required
               />
               <label>Password</label>
-              <input 
-                type="password" 
-                value={newPassword} 
-                onChange={(e) => setNewPassword(e.target.value)} 
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
                 required
               />
               <label>Role</label>
-              <select 
-                value={newRole} 
+              <select
+                value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
                 required
               >
@@ -205,9 +300,13 @@ const Users = () => {
                 <option value="admin">Admin</option>
                 {/* Agrega más roles según sea necesario */}
               </select>
-              <button type="submit" className="submit-button">Add User</button>
+              <button type="submit" className="submit-button">
+                Add User
+              </button>
             </form>
-            <button onClick={handleModal} className="close-button">Close</button>
+            <button onClick={handleModal} className="close-button">
+              Close
+            </button>
           </div>
         </div>
       )}

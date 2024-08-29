@@ -1,7 +1,7 @@
 import axios from "axios";
-import React, { useState } from "react";
-import logo from "../assets/png/logo.png";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import logo from "../assets/png/logo.png";
 
 const Header = () => {
   const [modal, setModal] = useState(false);
@@ -59,13 +59,12 @@ const Header = () => {
         sessionStorage.setItem("sid", sid);
         if (register) {
           setSuccess("Registration successful! You can now log in.");
-          setTimeout(() => {
-            window.location.href = "/client-dashboard";
-          }, 1000);
+          setRegister(false);
+          return;
         } else {
           setSuccess("Login successful");
           // Navigate to the dashboard on successful login
-          window.location.href = "/dashboard";
+          // window.location.href = "/dashboard";
         }
       } else {
         setError(result.error || "Authentication failed. Please try again.");
@@ -131,7 +130,7 @@ const Header = () => {
               <p>
                 {!register ? (
                   <>
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <a
                       href="#"
                       onClick={() => {

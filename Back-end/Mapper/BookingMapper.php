@@ -85,18 +85,31 @@ class BookingMapper{
         }
     }
     
-    public function getBookingInfo(int $bookingId) {
+    public function getBookingInfo(mixed $bookingId, mixed $userId) {
         try {
-            $query = "SELECT * 
-                        FROM " . $this->table_name. 
-                        " WHERE booking_id = :bookingId";
+            $query = "SELECT bookings.*, rooms.room_number FROM ".$this->table_name." JOIN rooms ON bookings.room_id = rooms.room_id";
+
+            if ($bookingId) {
+                $query .= " WHERE booking_id = :bookingId";
+            } else if ($userId) {
+                if ($bookingId) {
+                    $query .= " AND user_id = :userId";
+                }
+
+                $query .= " WHERE user_id = :userId";
+            }
 
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(":bookingId", $bookingId);
+            $bookingId && $stmt->bindParam(":bookingId", $bookingId);
+            $userId && $stmt->bindParam(":userId", $userId);
 
             $stmt->execute();
     
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $bookings = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $bookings[] = $row;
+            }
+            return $bookings;
         } catch (PDOException $e) {
             error_log("Error in getBookings: " . $e->getMessage());
             return [];
