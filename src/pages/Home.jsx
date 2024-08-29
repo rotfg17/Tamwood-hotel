@@ -1,7 +1,7 @@
-import axios from "axios";
-import React, { useState } from "react";
+import React from "react";
 import "../App.css";
-import logo from "../assets/png/logo.png";
+import Header from "./Header";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const [modal, setModal] = useState(false);
@@ -89,101 +89,14 @@ const Home = () => {
 
   return (
     <>
-      {modal && (
-        <div className="modal">
-          <div>
-            <span>{!register ? "Login" : "Register"}</span>
-            <form onSubmit={handleSubmit}>
-              {error && <div className="error-message">{error}</div>}
-              {success && <div className="success-message">{success}</div>}
-              {register && (
-                <div>
-                  <label htmlFor="username">Username</label>
-                  <input
-                    type="text"
-                    name="username"
-                    id="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              )}
-              <div>
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  name="password_hash"
-                  id="password_hash"
-                  value={formData.password_hash}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <p>
-                {!register ? (
-                  <>
-                    Don't have an account?{" "}
-                    <a
-                      href="#"
-                      onClick={() => {
-                        setRegister(true);
-                      }}
-                    >
-                      Register here
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    Already have an account?{" "}
-                    <a
-                      href="#"
-                      onClick={() => {
-                        setRegister(false);
-                      }}
-                    >
-                      Login here
-                    </a>
-                  </>
-                )}
-              </p>
-              <div className="formButtons">
-                <button type="button" onClick={() => setModal(false)}>
-                  Close
-                </button>
-                <input type="submit" value={register ? "Register" : "Login"} />
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      <header className="header">
-        <div>
-          <img src={logo} alt="Tamwood Hotel Logo" />
-          <div className="headerButtons">
-            <a href="#" onClick={handleModal}>
-              Login
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="hero">
         <div>
           <h1>This is Tamwood Hotel</h1>
           <h2>Jun, Jisun, Robinson, Adrian</h2>
           <div className="heroButtons">
-            <a href="#">Browse Rooms</a>
+            <Link to="roomListing">Browse Rooms</Link>
           </div>
         </div>
       </main>

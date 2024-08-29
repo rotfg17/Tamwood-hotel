@@ -1,125 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../App.css'; // Importa el archivo CSS
+import { useEffect, useState } from "react";
 
-const Booking = () => {
+const Bookings = () => {
   const [rooms, setRooms] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
+  const [services, setServices] = useState([]);
   const [error, setError] = useState(null);
+  const [checkedServices, setCheckedServices] = useState({});
+  const [formData, setFormData] = useState({
+    room_id: "",
+    check_in_date: "",
+    check_out_date: "",
+    services: [],
+  });
 
-  useEffect(() => {
-    if (checkInDate && checkOutDate) {
-      fetchRooms();
+  const handleCheckboxChange = (serviceName) => {
+    setCheckedServices((prev) => ({
+      ...prev,
+      [serviceName]: !prev[serviceName],
+    }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleServiceQuantityChange = (serviceName, quantity) => {
+    setFormData((prev) => {
+      const existingServiceIndex = prev.services.findIndex(
+        (service) => service.service_name === serviceName
+      );
+
+      if (existingServiceIndex !== -1) {
+        const updatedServices = [...prev.services];
+        updatedServices[existingServiceIndex].quantity = quantity;
+        return { ...prev, services: updatedServices };
+      } else {
+        return {
+          ...prev,
+          services: [
+            ...prev.services,
+            { service_name: serviceName, quantity: quantity },
+          ],
+        };
+      }
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const sid = sessionStorage.getItem("sid");
+
+    const service_ids = formData.services.map(
+      (service) => service.service_name
+    );
+    const quantities = formData.services.map((service) => service.quantity);
+
+    const requestBody = {
+      user_id: sid,
+      room_id: formData.room_id,
+      check_in_date: formData.check_in_date,
+      check_out_date: formData.check_out_date,
+      service: {
+        service_id: service_ids,
+        quantity: quantities,
+      },
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost/Tamwood-hotel/api/create-booking",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) throw new Error("Error creating booking");
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      // Handle success (e.g., show success message, redirect, etc.)
+      console.log("Booking created successfully:", data);
+    } catch (error) {
+      setError(error.message);
     }
-  }, [checkInDate, checkOutDate]);
+  };
 
   const fetchRooms = async () => {
     try {
-        const response = await axios.get('http://localhost/Tamwood-hotel/api/available-rooms', {
-            params: {
-                checkInDate,
-                checkOutDate,
-            },
-        });
-        if (response.data.rooms && response.data.rooms.length > 0) {
-            setRooms(response.data.rooms);
-        } else {
-            setRooms([]);
-            setError('No rooms available for the selected dates.');
-        }
+      const response = await fetch(
+        "http://localhost/Tamwood-hotel/api/rooms?status=available"
+      );
+      if (!response.ok) throw new Error("Error fetching rooms");
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      setRooms(data.data);
     } catch (error) {
-        console.error('Error fetching rooms:', error);
-        setError('Error fetching rooms. Please try again later.');
+      setError(error.message);
     }
-};
-
-
-  const handleRoomSelection = (room) => {
-    setSelectedRoom(room);
-    setError(null); // Clear any previous errors
-    console.log('Room selected:', room);
   };
 
-  const handleBooking = async () => {
-    if (!selectedRoom || !checkInDate || !checkOutDate) {
-      setError('Please select a room and provide check-in and check-out dates.');
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost/Tamwood-hotel/api/services"
+      );
+      if (!response.ok) throw new Error("Error fetching services");
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      setServices(data.data);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  useEffect(() => {
+    const sid = sessionStorage.getItem("sid");
+    if (!sid) {
+      // Redirect to login page if no SID is found
+      navigate("/");
       return;
     }
 
-    try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/create-booking', {
-        user_id: 1, // Ajusta esto según sea necesario
-        room_id: selectedRoom.room_id,
-        check_in_date: checkInDate,
-        check_out_date: checkOutDate,
-        status: 'Booked',
-      });
-
-      if (response.data.success) {
-        setSelectedRoom(null);
-        setCheckInDate('');
-        setCheckOutDate('');
-        setError(null);
-      } else {
-        setError('Failed to book room. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error booking room:', error);
-      setError('An error occurred. Please try again later.');
-    }
-  };
+    fetchRooms();
+    fetchServices();
+  }, []);
 
   return (
-    <div className="booking-container">
-      <h2>Book a Room</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div className="booking-form">
-        <div className="form-row">
-          <label>
-            Check-In Date:
-            <input 
-              type="date" 
-              value={checkInDate} 
-              onChange={(e) => setCheckInDate(e.target.value)} 
-              required
-            />
-          </label>
-          <label>
-            Check-Out Date:
-            <input 
-              type="date" 
-              value={checkOutDate} 
-              onChange={(e) => setCheckOutDate(e.target.value)} 
-              required
-            />
-          </label>
-        </div>
-      </div>
-      <div className="available-rooms">
-        <h3>Available Rooms</h3>
-        <ul>
-          {rooms.length > 0 ? (
-            rooms.map(room => (
-              <li key={room.room_id}>
-                {room.room_number} - {room.room_type} - ${room.price_per_night}
-                <button onClick={() => handleRoomSelection(room)}>Select</button>
-              </li>
-            ))
-          ) : (
-            <p>No rooms available for the selected dates.</p>
-          )}
-        </ul>
-      </div>
-      {selectedRoom && (
-        <div>
-          <p>Room Selected: {selectedRoom.room_number}</p>
-        </div>
-      )}
-      <button className="booking-button" onClick={handleBooking}>Book Room</button>
+    <div className="Bookings">
+      <h1>Bookings</h1>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="rooms">Room</label>
+        <select
+          name="room_id"
+          id="rooms"
+          value={formData.room_id}
+          onChange={handleInputChange}
+          required
+        >
+          <option value="" disabled>
+            Select a room
+          </option>
+          {rooms.map((room) => (
+            <option key={room.room_number} value={room.room_number}>
+              {room.room_number}
+            </option>
+          ))}
+        </select>
+
+        <label htmlFor="startDate">Start date:</label>
+        <input
+          type="date"
+          id="startDate"
+          name="check_in_date"
+          value={formData.check_in_date}
+          onChange={handleInputChange}
+          required
+        />
+
+        <label htmlFor="leavingDate">Leaving date:</label>
+        <input
+          type="date"
+          id="leavingDate"
+          name="check_out_date"
+          value={formData.check_out_date}
+          onChange={handleInputChange}
+          required
+        />
+
+        <label htmlFor="services">Services</label>
+        {services.map((service) => (
+          <div className="service" key={service.service_name}>
+            <div>
+              <input
+                type="checkbox"
+                id={service.service_name}
+                name={service.service_name}
+                checked={!!checkedServices[service.service_name]}
+                onChange={() => handleCheckboxChange(service.service_name)}
+              />
+              <label htmlFor={service.service_name}>
+                {service.service_name}
+              </label>
+            </div>
+            {/* Show the number input only if the service is checked */}
+            {checkedServices[service.service_name] && (
+              <input
+                type="number"
+                name={`${service.service_name}_amount`}
+                min="1"
+                placeholder="Enter amount"
+                onChange={(e) =>
+                  handleServiceQuantityChange(
+                    service.service_name,
+                    e.target.value
+                  )
+                }
+              />
+            )}
+          </div>
+        ))}
+
+        <button type="submit">Book room</button>
+      </form>
+      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };
 
-export default Booking;
+export default Bookings;
