@@ -12,25 +12,24 @@ const Users = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchString, setSearchString] = useState("");
   const [searchType, setSearchType] = useState("");
-  const [findUser, setFindUser] = useState("");
-
+  
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [currentPage, searchType, searchString]);
 
   const fetchUsers = async () => {
     try {
-      await axios.get(`http://localhost/Tamwood-hotel/api/user-list?currentPage=${currentPage}&searchType=${searchType}&searchString=${searchString}`)
-        .then((response) => {
-          const data = response.data;
-          setUsers(data.data.result);
-          setPaging(data.data.pagination);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      const response = await axios.get(`http://localhost/Tamwood-hotel/api/user-list?currentPage=${currentPage}&searchType=${searchType}&searchString=${searchString}`, {
+        headers: {
+          'user-sid': sid
+        }
+      });
+      const data = response.data;
+      setUsers(data.data.result);
+      setPaging(data.data.pagination);
     } catch (error) {
-      setError(error.message);
+      console.log(error);
+      setError("Failed to fetch users.");
     }
   };
 
@@ -40,24 +39,19 @@ const Users = () => {
     formData.append('uid', id);
 
     try {
-      await axios.post('http://localhost/Tamwood-hotel/api/init-locked', formData, {
+      const response = await axios.post('http://localhost/Tamwood-hotel/api/init-locked', formData, {
         headers: {
           'user-sid': sid
         }
-      })
-        .then((response) => {
-          const result = response.data;
-          if (result.data) {
-            setSuccess("User unlocked successfully!");
-            fetchUsers(); // Refetch the users list to update the UI
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          setError("Failed to unlock the user.");
-        });
+      });
+      if (response.data && response.data.message) {
+        setSuccess(response.data.message);
+        fetchUsers(); // Refrescar la lista de usuarios
+      } else {
+        setError("Failed to unlock the user.");
+      }
     } catch (error) {
-      console.log("Caught an error:", error);
+      console.log(error);
       setError("An error occurred while unlocking the user.");
     }
   };
@@ -70,20 +64,16 @@ const Users = () => {
     formData.append('amount', amount);
     formData.append('description', 'test');
     try {
-      await axios.post('http://localhost/Tamwood-hotel/api/create-transaction', formData, {
+      const response = await axios.post('http://localhost/Tamwood-hotel/api/create-transaction', formData, {
         headers: {
           'user-sid': sid
         }
-      })
-        .then((response) => {
-          const result = response.data;
-          if (result.data) {
-            setSuccess("Amount added successfully!");
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      });
+      if (response.data && response.data.message) {
+        setSuccess(response.data.message);
+      } else {
+        setError("Failed to add amount to the wallet.");
+      }
     } catch (error) {
       console.log("Caught an error:", error);
       setError("Failed to add amount to the wallet.");
