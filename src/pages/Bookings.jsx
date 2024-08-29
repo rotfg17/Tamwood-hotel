@@ -1,6 +1,10 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
+import { useSession } from "../hooks/store/session";
 
 const Bookings = () => {
+  const { user, sid } = useSession();
+
   const [rooms, setRooms] = useState([]);
   const [services, setServices] = useState([]);
   const [error, setError] = useState(null);
@@ -24,10 +28,10 @@ const Bookings = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleServiceQuantityChange = (serviceName, quantity) => {
+  const handleServiceQuantityChange = (serviceId, quantity) => {
     setFormData((prev) => {
       const existingServiceIndex = prev.services.findIndex(
-        (service) => service.service_name === serviceName
+        (service) => service.service_name === serviceId
       );
 
       if (existingServiceIndex !== -1) {
@@ -39,7 +43,7 @@ const Bookings = () => {
           ...prev,
           services: [
             ...prev.services,
-            { service_name: serviceName, quantity: quantity },
+            { service_id: serviceId, quantity: quantity },
           ],
         };
       }
@@ -48,16 +52,15 @@ const Bookings = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const sid = sessionStorage.getItem("sid");
 
-    const service_ids = formData.services.map(
-      (service) => service.service_name
+    const service_ids = formData.services.map((service) => service.service_id);
+    const quantities = formData.services.map((service) =>
+      Number(service.quantity)
     );
-    const quantities = formData.services.map((service) => service.quantity);
 
     const requestBody = {
-      user_id: sid,
-      room_id: formData.room_id,
+      user_id: user.id,
+      room_id: Number(formData.room_id),
       check_in_date: formData.check_in_date,
       check_out_date: formData.check_out_date,
       service: {
@@ -67,14 +70,13 @@ const Bookings = () => {
     };
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         "http://localhost/Tamwood-hotel/api/create-booking",
+        requestBody,
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "user-sid": sid,
           },
-          body: JSON.stringify(requestBody),
         }
       );
 
@@ -145,7 +147,7 @@ const Bookings = () => {
             Select a room
           </option>
           {rooms.map((room) => (
-            <option key={room.room_number} value={room.room_number}>
+            <option key={room.room_number} value={room.room_id}>
               {room.room_number}
             </option>
           ))}
@@ -195,7 +197,7 @@ const Bookings = () => {
                 placeholder="Enter amount"
                 onChange={(e) =>
                   handleServiceQuantityChange(
-                    service.service_name,
+                    service.service_id,
                     e.target.value
                   )
                 }

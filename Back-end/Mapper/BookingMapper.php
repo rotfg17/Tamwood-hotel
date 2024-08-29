@@ -105,7 +105,11 @@ class BookingMapper{
 
             $stmt->execute();
     
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $bookings = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $bookings[] = $row;
+            }
+            return $bookings;
         } catch (PDOException $e) {
             error_log("Error in getBookings: " . $e->getMessage());
             return [];

@@ -80,9 +80,10 @@ class BookingController{
     public function getBookingInfo() {
         try {
             $bookingId = isset($_GET['bookingId'])? $_GET['bookingId'] : "";
+            $userId = isset($_GET['userId']) ? $_GET['userId'] : "";
 
             $bookingMapper = new BookingMapper($this->db);
-            $result = $bookingMapper->getBookingInfo($bookingId);
+            $result = $bookingMapper->getBookingInfo($bookingId, $userId);
             
             return $this->jsonResponse(200, $result);
 
@@ -104,7 +105,7 @@ class BookingController{
             $input = json_decode(file_get_contents('php://input'), true);
             
             // booking: user_id, room_id, check_in_date, check_out_date return booking_id
-            $booking -> setBookingId($input['user_id']);
+            $booking -> setUserId($input['user_id']);
             $booking -> setRoomId($input['room_id']);
             $booking -> setCheckInDate($input['check_in_date']);
             $booking -> setCheckOutDate($input['check_out_date']);
@@ -138,7 +139,7 @@ class BookingController{
             //insert booking-service table
             $result = $bookingMapper -> createBookingService($bsArray);
 
-            $util -> Audit_Gen($_SERVER,true,unserialize($_SESSION['userClass']) -> getEmail()." successfully booking");
+            $util -> Audit_Gen($_SERVER, true, unserialize($_SESSION['userClass']) -> getEmail()." successfully booking");
             return $this->jsonResponse(200, $result);
         }catch(Exception $e) {
             error_log("Error creating booking: " . $e->getMessage());
