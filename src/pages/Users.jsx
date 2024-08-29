@@ -34,27 +34,30 @@ const Users = () => {
   };
 
   const handleUnlock = async (event, id) => {
-    event.preventDefault();
-    const formData = new FormData();
-    formData.append('uid', id);
+  event.preventDefault();
+  
+  const formData = new FormData();
+  formData.append('uid', id);
 
-    try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/init-locked', formData, {
-        headers: {
-          'user-sid': sid
-        }
-      });
-      if (response.data && response.data.message) {
-        setSuccess(response.data.message);
-        fetchUsers(); // Refrescar la lista de usuarios
-      } else {
-        setError("Failed to unlock the user.");
+  try {
+    const response = await axios.post('http://localhost/Tamwood-hotel/api/init-locked', formData, {
+      headers: {
+        'user-sid': sid
       }
-    } catch (error) {
-      console.log(error);
-      setError("An error occurred while unlocking the user.");
+    });
+
+    if (response.data && response.data.message) {
+      setSuccess(response.data.message);
+      fetchUsers(); // Refrescar la lista de usuarios
+    } else {
+      setError("Failed to unlock the user.");
     }
-  };
+  } catch (error) {
+    console.log(error);
+    setError("An error occurred while unlocking the user.");
+  }
+};
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -141,3 +144,4 @@ const Users = () => {
 };
 
 export default Users;
+

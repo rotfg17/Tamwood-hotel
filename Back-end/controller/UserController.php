@@ -11,6 +11,7 @@ class UserController {
     public function __construct($db, $requestMethod) {
         $this->db = $db;
         $this->requestMethod = $requestMethod;
+        
     }
 
     public function processRequest($param) {
@@ -264,29 +265,30 @@ class UserController {
             }
     
             // Verifica que el usuario tiene el rol adecuado
-            $role = $userClass->getRole();
-            if ($role != 'admin') {
-                throw new Exception("No permission");
+            if ($userClass->getRole() != 'admin') {
+                throw new Exception("You do not have permission to perform this action.");
             }
     
             // Procede con el desbloqueo del usuario
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
     
-            $user = new User();
-            $user->setId($input['uid']);
+            if (!isset($input['uid'])) {
+                throw new Exception("User ID is missing.");
+            }
     
-            if ($userMapper->initLocked($user->getId())) {
-                return $this->jsonResponse(201, ['message' => 'Locked release']);
+            if ($userMapper->unlockUser($input['uid'])) {
+                return $this->jsonResponse(200, ['message' => 'User unlocked successfully']);
             } else {
-                throw new Exception("Failed to update user.");
+                throw new Exception("Failed to unlock the user.");
             }
         } catch (Exception $e) {
             // Registra el error en el log y devuelve una respuesta de error en formato JSON
-            error_log("Error init Lock: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
+            error_log("Error unlocking user: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error unlocking user: " . $e->getMessage()]);
         }
     }
+    
     
     
 
