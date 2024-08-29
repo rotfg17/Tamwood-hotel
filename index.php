@@ -95,6 +95,9 @@ function route($method, $path) {
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/users') {  //Get all users
         $controller = new UserController($db, $method);
         return $controller->processRequest('users');
+    } else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/user') {  //Get specific user
+        $controller = new UserController($db, $method);
+        return $controller->processRequest('user');
     } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-user') { //Admin's user addition function
         $controller = new UserController($db, $method);
         if($_SESSION['userClass']){
@@ -117,11 +120,6 @@ function route($method, $path) {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-list');
     } 
-
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/available-rooms') {
-        $controller = new BookingController($db, $method);
-        return $controller->processRequest('available-rooms');
-    }
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/bookings') { ///Get all bookings
         $controller = new BookingController($db, $method);
         return $controller->processRequest('bookings');
@@ -201,7 +199,7 @@ function route($method, $path) {
     }
 
     // transaction
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/transactions') { // get transactions by user
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/transactions') { // get transactions by user
         $controller = new TransactionController($db, $method);
         $request = $controller->processRequest('transactions');
         return $request;

@@ -59,13 +59,16 @@ class RoomMapper {
     }
     public function getAvailableRooms($selectedCheckInDate, $selectedCheckOutDate) {
         try{
-            $query = "SELECT * FROM " . $this->table_name .
-                        " WHERE room_id IN(
-                            SELECT room_id FROM `bookings` 
-                            WHERE NOT (check_in_date <= :selectedCheckInDate 
-                            AND check_out_date >= :selectedCheckOutDate )
-                        ) AND status = 'available'";
-            
+            $query = "SELECT * 
+                    FROM rooms 
+                    WHERE room_id NOT IN (
+                        SELECT room_id
+                        FROM bookings 
+                        WHERE UNIX_TIMESTAMP(check_in_date) < UNIX_TIMESTAMP(:selectedCheckOutDate) 
+                        AND UNIX_TIMESTAMP(check_out_date) > UNIX_TIMESTAMP(:selectedCheckInDate)
+                    ) 
+                    AND status = 'available'";
+                    
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':selectedCheckInDate', $selectedCheckInDate );
             $stmt->bindParam(':selectedCheckOutDate', $selectedCheckOutDate );

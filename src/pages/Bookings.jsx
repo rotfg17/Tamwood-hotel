@@ -5,6 +5,7 @@ import { useSession } from "../hooks/store/session";
 const Bookings = () => {
   const { user, sid } = useSession();
 
+  const [bookings, setBookings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [services, setServices] = useState([]);
   const [error, setError] = useState(null);
@@ -94,7 +95,7 @@ const Bookings = () => {
   const fetchRooms = async () => {
     try {
       const response = await fetch(
-        "http://localhost/Tamwood-hotel/api/rooms?status=available"
+        `http://localhost/Tamwood-hotel/api/available-room?checkInDate=${formData.check_in_date}&checkOutDate=${formData.check_out_date}`
       );
       if (!response.ok) throw new Error("Error fetching rooms");
       const data = await response.json();
@@ -119,95 +120,191 @@ const Bookings = () => {
     }
   };
 
+  const fetchBooking = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost/Tamwood-hotel/api/booking-list",
+        {
+          headers: {
+            "user-sid": sid,
+          },
+        }
+      );
+
+      setBookings(response.data.data.result);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleBookingStatus = async (status, booking) => {
+    const data = new FormData();
+    data.append("bid", booking.booking_id);
+    data.append("status", status);
+
+    try {
+      await axios.post(
+        "http://localhost/Tamwood-hotel/api/update-booking-status",
+        data,
+        {
+          headers: {
+            "user-sid": sid,
+          },
+        }
+      );
+
+      fetchBooking();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   useEffect(() => {
-    const sid = sessionStorage.getItem("sid");
-    if (!sid) {
-      // Redirect to login page if no SID is found
-      navigate("/");
+    if (formData.check_in_date && formData.check_out_date) {
+      fetchRooms();
+    }
+  }, [formData.check_in_date, formData.check_out_date]);
+
+  useEffect(() => {
+    if (user && user.role !== "customer") {
+      fetchBooking();
       return;
     }
 
-    fetchRooms();
     fetchServices();
-  }, []);
+  }, [user]);
 
   return (
-    <div className="Bookings">
-      <h1>Bookings</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="rooms">Room</label>
-        <select
-          name="room_id"
-          id="rooms"
-          value={formData.room_id}
-          onChange={handleInputChange}
-          required
-        >
-          <option value="" disabled>
-            Select a room
-          </option>
-          {rooms.map((room) => (
-            <option key={room.room_number} value={room.room_id}>
-              {room.room_number}
-            </option>
-          ))}
-        </select>
-
-        <label htmlFor="startDate">Start date:</label>
-        <input
-          type="date"
-          id="startDate"
-          name="check_in_date"
-          value={formData.check_in_date}
-          onChange={handleInputChange}
-          required
-        />
-
-        <label htmlFor="leavingDate">Leaving date:</label>
-        <input
-          type="date"
-          id="leavingDate"
-          name="check_out_date"
-          value={formData.check_out_date}
-          onChange={handleInputChange}
-          required
-        />
-
-        <div className="services-header">Select Additional Services:</div>
-        <div className="services">
-          {services.map((service) => (
-            <div className="service" key={service.service_name}>
-              <input
-                type="checkbox"
-                id={service.service_name}
-                name={service.service_name}
-                checked={!!checkedServices[service.service_name]}
-                onChange={() => handleCheckboxChange(service.service_name)}
-              />
-              <label htmlFor={service.service_name}>
-                {service.service_name}
-              </label>
-              {checkedServices[service.service_name] && (
-                <input
-                  type="number"
-                  name={`${service.service_name}_amount`}
-                  min="1"
-                  placeholder="Qty"
-                  onChange={(e) =>
-                    handleServiceQuantityChange(
-                      service.service_name,
-                      e.target.value
-                    )
-                  }
-                />
-              )}
-            </div>
-          ))}
+    <>
+      {(user?.role === "staff" || user?.role === "admin") && (
+        <div className="transaction-container">
+          <h2>Booking Status</h2>
+          <table className="transaction-table">
+            <thead>
+              <tr>
+                <th>Room Number</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Price</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Change Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((booking) => {
+                return (
+                  <tr key={booking.booking_id}>
+                    <td>{booking.room_number}</td>
+                    <td>{booking.username}</td>
+                    <td>{booking.status}</td>
+                    <td>{booking.total_price}</td>
+                    <td>{booking.check_in_date}</td>
+                    <td>{booking.check_out_date}</td>
+                    {booking.status === "pending" && (
+                      <td>
+                        <button
+                          onClick={() =>
+                            handleBookingStatus("approved", booking)
+                          }
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleBookingStatus("cancelled", booking)
+                          }
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        <button type="submit">Book room</button>
-      </form>
-      {error && <div className="error-message">{error}</div>}
-    </div>
+      )}
+      {user?.role === "customer" && (
+        <div className="Bookings">
+          <h1>Bookings</h1>
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="rooms">Room</label>
+            <select
+              name="room_id"
+              id="rooms"
+              value={formData.room_id}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="" disabled>
+                Select a room
+              </option>
+              {rooms.map((room) => (
+                <option key={room.room_number} value={room.room_id}>
+                  {room.room_number}
+                </option>
+              ))}
+            </select>
+
+            <label htmlFor="startDate">Start date:</label>
+            <input
+              type="date"
+              id="startDate"
+              name="check_in_date"
+              value={formData.check_in_date}
+              onChange={handleInputChange}
+              required
+            />
+
+            <label htmlFor="leavingDate">Leaving date:</label>
+            <input
+              type="date"
+              id="leavingDate"
+              name="check_out_date"
+              value={formData.check_out_date}
+              onChange={handleInputChange}
+              required
+            />
+
+            <div className="services-header">Select Additional Services:</div>
+            <div className="services">
+              {services.map((service) => (
+                <div className="service" key={service.service_name}>
+                  <input
+                    type="checkbox"
+                    id={service.service_name}
+                    name={service.service_name}
+                    checked={!!checkedServices[service.service_name]}
+                    onChange={() => handleCheckboxChange(service.service_name)}
+                  />
+                  <label htmlFor={service.service_name}>
+                    {service.service_name}
+                  </label>
+                  {checkedServices[service.service_name] && (
+                    <input
+                      type="number"
+                      name={`${service.service_name}_amount`}
+                      min="1"
+                      placeholder="Qty"
+                      onChange={(e) =>
+                        handleServiceQuantityChange(
+                          service.service_name,
+                          e.target.value
+                        )
+                      }
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <button type="submit">Book room</button>
+          </form>
+          {error && <div className="error-message">{error}</div>}
+        </div>
+      )}
+    </>
   );
 };
 

@@ -85,7 +85,6 @@ const RoomForm = () => {
       callData();
     }
   }, [sid, user]);
-  console.log(rooms);
 
   return (
     <>
@@ -169,7 +168,35 @@ const RoomForm = () => {
           <button type="submit">Add Room</button>
         </form>
       )}
-      {user?.role === "customer" && <div>good</div>}
+      {user?.role === "customer" && (
+        <div className="transaction-container">
+          <h2>Reservation Room List</h2>
+          <table className="transaction-table">
+            <thead>
+              <tr>
+                <th>Room Number</th>
+                <th>Status</th>
+                <th>Price</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rooms.map((room) => {
+                return (
+                  <tr key={room.booking_id}>
+                    <td>{room.room_number}</td>
+                    <td>{room.status}</td>
+                    <td>{room.total_price}</td>
+                    <td>{room.check_in_date}</td>
+                    <td>{room.check_out_date}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 };

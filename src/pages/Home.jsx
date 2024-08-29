@@ -51,7 +51,7 @@ const Home = () => {
     }
 
     try {
-      const response = await axios.post(url, data);
+      const response = await axios.post(url, data, { withCredentials: true });
       const result = response.data;
 
       if (result.error) {
@@ -66,12 +66,12 @@ const Home = () => {
 
         setSuccess("Login successful");
 
-        // Redirigir al dashboard basado en el rol del usuario
-        if (user.role === "admin") {
-          window.location.href = "/dashboard";
-        } else {
-          window.location.href = "/customer-dashboard";
+        if (register) {
+          setRegister(false);
+          return;
         }
+
+        window.location.href = "/dashboard";
       } else {
         setError("Authentication failed. Please try again.");
         setFormData({ username: "", email: "", password_hash: "" });

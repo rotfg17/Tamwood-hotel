@@ -74,6 +74,21 @@ class UserMapper {
             return [];
         }
     }
+
+    public function getUser(int $userId): array {
+        try {
+            $query = "SELECT * FROM " . $this->table_name . " WHERE user_id = :userId";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":userId", $userId);
+            $stmt->execute();
+    
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error in getUsers: " . $e->getMessage());
+            return [];
+        }
+    }
     
     public function verifyUserbyEmail(string $email): bool {
         $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE email = :email";

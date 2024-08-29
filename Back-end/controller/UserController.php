@@ -23,6 +23,9 @@ class UserController {
             case 'users':
                 $response = $this->getUsers();
                 break;
+            case 'user':
+                $response = $this->getUser();
+                break;
             case 'add-user':
                 $response = $this->createUser();
                 break;
@@ -83,6 +86,19 @@ class UserController {
         } catch (PDOException $e) {
             error_log("Error getting users: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error getting users: " . $e->getMessage()]);
+        }
+    }
+
+    public function getUser() {
+        try {
+            $userMapper = new UserMapper($this->db);
+            $userId = isset($_GET['user_id']) ? $_GET['user_id'] : null;
+
+            $result = $userMapper->getUser($userId);
+            return $this->jsonResponse(200, $result);
+        } catch (PDOException $e) {
+            error_log("Error getting user: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error getting user: " . $e->getMessage()]);
         }
     }
 
@@ -279,10 +295,9 @@ class UserController {
     
     
     private function jsonResponse($statusCode, $data) {
-        header('Content-Type: application/json');
+        header("Content-Type: application/json");
         http_response_code($statusCode);
-        echo json_encode(['sessionStatus' => null, 'data' => $data]);
-        exit;
+        return json_encode($data);
     }
     
     private function notFoundResponse() {

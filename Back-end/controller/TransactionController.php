@@ -39,10 +39,10 @@ class TransactionController {
     public function getUserTransactions() {
         try {
             $transactionMapper = new TransactionMapper($this->db);
-            $input = $_POST;
+            $userId = isset($_GET['user_id'])? $_GET['user_id'] : ""; 
             
             $user = new User();
-            $user->setId($input['user_id']);
+            $user->setId($userId);
 
             $result = $transactionMapper->getUserTransactions($user);
 
@@ -75,7 +75,7 @@ class TransactionController {
             //finish transcation
             $this->db->commit();
 
-            $util -> Audit_Gen($_SERVER,true,unserialize($_SESSION['userClass']) -> getEmail()." Filling the wallet.");
+            // $util -> Audit_Gen($_SERVER,true,unserialize($_SESSION['userClass']) -> getEmail()." Filling the wallet.");
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             $this->db->rollback();

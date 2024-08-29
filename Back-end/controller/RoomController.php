@@ -68,6 +68,7 @@ class RoomController {
             $checkInDate = isset($_GET['checkInDate']) ? $_GET['checkInDate'] : null;
             $checkOutDate = isset($_GET['checkOutDate']) ? $_GET['checkOutDate'] : null;
             $result = $roomMapper->getAvailableRooms($checkInDate, $checkOutDate);
+
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error getting Available Rooms: " . $e->getMessage());

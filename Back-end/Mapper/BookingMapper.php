@@ -87,7 +87,7 @@ class BookingMapper{
     
     public function getBookingInfo(mixed $bookingId, mixed $userId) {
         try {
-            $query = "SELECT * FROM ".$this->table_name;
+            $query = "SELECT bookings.*, rooms.room_number FROM ".$this->table_name." JOIN rooms ON bookings.room_id = rooms.room_id";
 
             if ($bookingId) {
                 $query .= " WHERE booking_id = :bookingId";
