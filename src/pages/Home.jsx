@@ -41,8 +41,7 @@ const Home = () => {
       ? {
           name: formData.username,
           email: formData.email,
-          password: formData.password_hash,
-          role: "c", // Role as 'customer'
+          password: formData.password_hash
         }
       : { email: formData.email, password: formData.password_hash };
 
