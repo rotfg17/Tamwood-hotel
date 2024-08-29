@@ -243,59 +243,50 @@ class UserController {
         }
     }
     
-    class UserController {
-        // Método para desbloquear el usuario
-        public function initLocked() {
-            try {
-                session_start(); // Iniciar la sesión
-    
-                // Verificar si 'userClass' está configurado en la sesión
-                if (!isset($_SESSION['userClass']) || empty($_SESSION['userClass'])) {
-                    throw new Exception("Session userClass is not set or is empty.");
-                }
-    
-                // Deserializar el objeto 'userClass' de la sesión
-                $userClass = unserialize($_SESSION['userClass']);
-    
-                // Verificar que la deserialización fue exitosa
-                if ($userClass === false) {
-                    throw new Exception("Failed to unserialize userClass.");
-                }
-    
-                // Verificar que el usuario tiene el rol adecuado
-                $role = $userClass->getRole();
-                if ($role != 'admin') {
-                    throw new Exception("No permission");
-                }
-    
-                // Proceder con el desbloqueo del usuario
-                $userMapper = new UserMapper($this->db);
-                $input = $_POST;
-    
-                $user = new User();
-                $user->setId($input['uid']); // Asignar el ID del usuario que se quiere desbloquear
-    
-                if ($userMapper->initLocked($user->getId())) {
-                    return $this->jsonResponse(201, ['message' => 'User unlocked successfully']);
-                } else {
-                    throw new Exception("Failed to unlock user.");
-                }
-            } catch (Exception $e) {
-                // Registrar el error en el log y devolver una respuesta de error en formato JSON
-                error_log("Error init Lock: " . $e->getMessage());
-                return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
+    public function initLocked(){
+        try {
+            // Inicia la sesión si no está ya iniciada
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
             }
-        }
     
-        // Método para devolver respuestas JSON
-        private function jsonResponse($status, $response) {
-            header("Content-Type: application/json");
-            http_response_code($status);
-            echo json_encode($response);
-            exit();
+            // Verifica que 'userClass' esté configurado en la sesión
+            if (!isset($_SESSION['userClass']) || empty($_SESSION['userClass'])) {
+                throw new Exception("Session userClass is not set or is empty.");
+            }
+    
+            // Deserializa el objeto 'userClass' de la sesión
+            $userClass = unserialize($_SESSION['userClass']);
+    
+            // Verifica que la deserialización fue exitosa
+            if ($userClass === false) {
+                throw new Exception("Failed to unserialize userClass.");
+            }
+    
+            // Verifica que el usuario tiene el rol adecuado
+            $role = $userClass->getRole();
+            if ($role != 'admin') {
+                throw new Exception("No permission");
+            }
+    
+            // Procede con el desbloqueo del usuario
+            $userMapper = new UserMapper($this->db);
+            $input = $_POST;
+    
+            $user = new User();
+            $user->setId($input['uid']);
+    
+            if ($userMapper->initLocked($user->getId())) {
+                return $this->jsonResponse(201, ['message' => 'Locked release']);
+            } else {
+                throw new Exception("Failed to update user.");
+            }
+        } catch (Exception $e) {
+            // Registra el error en el log y devuelve una respuesta de error en formato JSON
+            error_log("Error init Lock: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
         }
     }
-    
     
     
 
