@@ -35,9 +35,7 @@ const RoomList = () => {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch(
-        "http://localhost/Tamwood-hotel/api/rooms?status=available"
-      );
+      const response = await fetch("http://localhost/Tamwood-hotel/api/rooms");
       if (!response.ok) throw new Error("Error fetching rooms");
       const data = await response.json();
       if (data.error) throw new Error(data.error);
@@ -143,8 +141,10 @@ const RoomList = () => {
             <th>Room Type</th>
             <th>Price</th>
             <th>Description</th>
+            <th>Image</th>
             <th>Status</th>
-            {user?.role === "staff" && <th>Action</th>}
+            {user?.role === "staff" ||
+              (user?.role === "admin" && <th>Action</th>)}
           </tr>
         </thead>
         <tbody>
@@ -159,10 +159,16 @@ const RoomList = () => {
                 <td>{room.room_type}</td>
                 <td>${room.price_per_night}</td>
                 <td>{room.description}</td>
+                <td>
+                  <img
+                    className="room-image"
+                    src={`../../Back-end/uploads/${room.image_url}`}
+                  />
+                </td>
                 <td className={`status-${room.status.toLowerCase()}`}>
                   {room.status}
                 </td>
-                {user?.role === "staff" && (
+                {(user?.role === "staff" || user?.role === "admin") && (
                   <td>
                     <button onClick={() => handleEditClick(room)}>Edit</button>
                     <button onClick={() => handleDeleteClick(room)}>

@@ -27,7 +27,7 @@ class RoomMapper {
         }
     }
 
-    public function getRooms(string $status) {
+    public function getRooms(mixed $status) {
         try {
             $rooms = [];
 

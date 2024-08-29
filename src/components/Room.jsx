@@ -41,19 +41,22 @@ const Room = ({ room }) => {
     }
   };
 
+  console.log(room);
   return (
     <>
-      <tr key={room.booking_id}>
+      <tr>
         <td>{room.room_number}</td>
         <td>{room.status}</td>
         <td>{room.total_price}</td>
         <td>{room.check_in_date}</td>
         <td>{room.check_out_date}</td>
-        <td>
-          <button type="button" onClick={() => setModal(true)}>
-            Leave Comment
-          </button>
-        </td>
+        {room.status === "approved" && (
+          <td>
+            <button type="button" onClick={() => setModal(true)}>
+              Leave Comment
+            </button>
+          </td>
+        )}
       </tr>
       {modal && (
         <div className="modal">

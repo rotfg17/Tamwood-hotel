@@ -70,16 +70,18 @@ const RoomForm = () => {
   useEffect(() => {
     if (user) {
       const callData = async () => {
-        const response = await axios.get(
-          `http://localhost/Tamwood-hotel/api/booking-info?userId=${user.id}`,
-          {
-            headers: {
-              "user-sid": sid,
-            },
-          }
-        );
+        const [bookingResponse] = await Promise.all([
+          axios.get(
+            `http://localhost/Tamwood-hotel/api/booking-info?userId=${user.id}`,
+            {
+              headers: {
+                "user-sid": sid,
+              },
+            }
+          ),
+        ]);
 
-        setRooms(response.data.data);
+        setRooms(bookingResponse.data.data);
       };
 
       callData();
@@ -184,7 +186,7 @@ const RoomForm = () => {
             </thead>
             <tbody>
               {rooms.map((room) => {
-                return <Room key={room.id} room={room} />;
+                return <Room key={room.booking_id} room={room} />;
               })}
             </tbody>
           </table>

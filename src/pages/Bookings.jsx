@@ -32,7 +32,7 @@ const Bookings = () => {
   const handleServiceQuantityChange = (serviceId, quantity) => {
     setFormData((prev) => {
       const existingServiceIndex = prev.services.findIndex(
-        (service) => service.service_name === serviceId
+        (service) => service.service_id === serviceId
       );
 
       if (existingServiceIndex !== -1) {
@@ -292,7 +292,7 @@ const Bookings = () => {
                       placeholder="Qty"
                       onChange={(e) =>
                         handleServiceQuantityChange(
-                          service.service_name,
+                          service.service_id,
                           e.target.value
                         )
                       }
