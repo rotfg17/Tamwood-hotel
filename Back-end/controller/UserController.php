@@ -7,11 +7,12 @@ require_once __DIR__ . '/../Utils/Util.php';
 class UserController {
     private $db;
     private $requestMethod;
+    private $session;
 
     public function __construct($db, $requestMethod) {
         $this->db = $db;
         $this->requestMethod = $requestMethod;
-        
+        $this->session = new Session(); // Instancia de la clase Session
     }
 
     public function processRequest($param) {
@@ -95,16 +96,14 @@ class UserController {
             $user = new User();
             $user->setEmail($input['email']);
             $user->setPasswordHash($input['password']); // password hash
-            
+    
             // Password verification
             if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
                 $userInfo = $userMapper->getUserByEmail($user->getEmail());
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
                 $userMapper -> initLocked($newUser->getId());
                 
-                $session = new Session();
-    
-                $sid = $session->startSession($newUser);
+                $sid = $this->session->startSession($newUser);
     
                 // Reset failed login attempts after successful login
                 $userMapper->initLocked($userInfo['user_id']);
@@ -142,13 +141,8 @@ class UserController {
         }
     }
     
-    
-    
-    
-
     public function Logout() {
-        $session = new Session();
-        $session->deleteSession();
+        $this->session->deleteSession();
 
         header("Location: /Tamwood-hotel/");
         exit();
@@ -172,19 +166,16 @@ class UserController {
                 if ($userMapper->createUser($user)) {
                    $util->Audit_Gen($_SERVER, true, $user->getEmail()." User created");
     
-                   // Aquí deberías generar o recuperar el SID
-                   // Supongamos que tienes un método para generarlo o recuperarlo:
-                   $sid = $this->generateSessionID($user);
+                   // Genera o recupera el SID
+                   $sid = $this->session->startSession($user);
     
                    return $this->jsonResponse(201, ['success' => 'User created successfully.', 'sid' => $sid]);
                 } else {
                     throw new Exception("Failed to create user.");
                 }
             } else {
-
                 $util->Audit_Gen($_SERVER, true, $user->getEmail()." User already exists");
                 return $this->jsonResponse(409, ['error' => 'User already exists']);
-
             }
     
         } catch (Exception $e) {
@@ -192,14 +183,6 @@ class UserController {
             return $this->jsonResponse(500, ["error" => "Error creating user: " . $e->getMessage()]);
         }
     }
-    
-    private function generateSessionID($user) {
-        // Aquí podrías implementar la lógica para generar o recuperar el SID
-        // Ejemplo simple:
-        return session_id(); // o algún otro mecanismo para generar el SID
-    }
-    
-    
 
     public function updateUser() {
         try {
@@ -226,15 +209,13 @@ class UserController {
 
     public function deleteUser() {
         try {
-            // print_r (unserialize($_SESSION['userClass']));
-            // $role = unserialize($_SESSION['sid'])->getRole();
-            // if($role != 'admin') throw new Exception("No permission");
+            $role = unserialize($_SESSION['userClass'])->getRole();
+            if($role != 'admin') throw new Exception("No permission");
 
             $userMapper = new UserMapper($this->db);
             $user_id = $_POST["uid"];
 
             if ($userMapper->deleteUser($user_id)) {
-
                 return $this->jsonResponse(201, ['message' => 'User Deleted']);
             } else {
                 throw new Exception("Failed to delete user.");
@@ -245,11 +226,17 @@ class UserController {
         }
     }
     
-    public function initLocked(){
+    public function initLocked() {
         try {
             // Inicia la sesión si no está ya iniciada
             if (session_status() == PHP_SESSION_NONE) {
                 session_start();
+            }
+    
+            // Verifica el estado de la sesión
+            $sessionStatus = $this->session->getSession();
+            if ($sessionStatus !== 'active') {
+                throw new Exception("Session expired or invalid. Please log in again.");
             }
     
             // Verifica que 'userClass' esté configurado en la sesión
@@ -266,36 +253,36 @@ class UserController {
             }
     
             // Verifica que el usuario tiene el rol adecuado
-            $role = $userClass->getRole();
-            if ($role != 'admin') {
-                throw new Exception("No permission");
+            if ($userClass->getRole() != 'admin') {
+                throw new Exception("You do not have permission to perform this action.");
             }
     
             // Procede con el desbloqueo del usuario
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
     
-            $user = new User();
-            $user->setId($input['uid']);
+            if (!isset($input['uid'])) {
+                throw new Exception("User ID is missing.");
+            }
     
-            if ($userMapper->initLocked($user->getId())) {
-                return $this->jsonResponse(201, ['message' => 'Locked release']);
+            if ($userMapper->unlockUser($input['uid'])) {
+                return $this->jsonResponse(200, ['message' => 'User unlocked successfully']);
             } else {
                 throw new Exception("Failed to unlock the user.");
             }
         } catch (Exception $e) {
             // Registra el error en el log y devuelve una respuesta de error en formato JSON
-            error_log("Error init Lock: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
+            error_log("Error unlocking user: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error unlocking user: " . $e->getMessage()]);
         }
     }
     
     
-
     private function jsonResponse($statusCode, $data) {
-        header("Content-Type: application/json");
+        header('Content-Type: application/json');
         http_response_code($statusCode);
-        return json_encode($data);
+        echo json_encode(['sessionStatus' => null, 'data' => $data]);
+        exit;
     }
     
     private function notFoundResponse() {

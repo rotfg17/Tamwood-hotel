@@ -13,7 +13,7 @@ const Users = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchString, setSearchString] = useState("");
   const [searchType, setSearchType] = useState("");
-  
+
   useEffect(() => {
     fetchUsers();
   }, [currentPage, searchType, searchString]);
@@ -84,9 +84,16 @@ const Users = () => {
   const handleModal = () => {
     setModal(!modal);
   };
-    return (
-      <>
-        {user?.role == 'customer' &&
+
+  const handleDelete = async (id) => {
+    // Aquí debes implementar la lógica para eliminar un usuario
+    console.log(`Delete user with ID: ${id}`);
+    // Recuerda llamar a fetchUsers() después de eliminar el usuario
+  };
+
+  return (
+    <>
+      {user?.role === 'customer' &&
         <div className="user-container">
           <h2>Users</h2>
           <label>Filling Wallet</label>
@@ -99,14 +106,17 @@ const Users = () => {
           {success && <div className="success-message">{success}</div>}
           {error && <div className="error-message">{error}</div>}
         </div>
-        }
-        {user?.role == 'admin' &&
+      }
+      {user?.role === 'admin' &&
         <div className="user-container">
           <div>
-            <input type="text" 
-                value={searchString} 
-                onChange={(e) => setAmount(e.target.value)}/>
-            <button>Search</button>
+            <input 
+              type="text" 
+              value={searchString} 
+              onChange={(e) => setSearchString(e.target.value)} 
+              placeholder="Search users"
+            />
+            <button onClick={fetchUsers}>Search</button>
             <button onClick={handleModal}>Add User</button>
           </div>
           <table className="user-table">
@@ -123,29 +133,38 @@ const Users = () => {
               </tr>
             </thead>
             <tbody>
-            {users.length === 0 ? (
-                        <tr>
-                            <td colSpan="6">No users available</td>
-                        </tr>
-                    ) : (
-                        users.map((user_row, index) => (
-                            <tr key={`${user_row.user_id}-${index}`}>
-                                <td>{user_row.username}</td>
-                                <td>{user_row.email}</td>
-                                <td>${user_row.role}</td>
-                                <td>{user_row.is_locked==1?<button onClick={()=>handleUnlock(user_row.user_id)}>Unlock</button>:'-'}</td>
-                                <td>{user_row.failed_login_attempts}</td>
-                                <td>{user_row.wallet_balance}</td>
-                                <td>{user_row.created_at}</td>
-                                <td>{user_row.username.includes('__DELETED')?'-':<button onClick={()=>handleDelete(user_row.user_id)}>Delete</button>}</td>
-                            </tr>
-                        ))
-                    )}
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan="8">No users available</td>
+                </tr>
+              ) : (
+                users.map((user_row, index) => (
+                  <tr key={`${user_row.user_id}-${index}`}>
+                    <td>{user_row.username}</td>
+                    <td>{user_row.email}</td>
+                    <td>{user_row.role}</td>
+                    <td>{user_row.is_locked === 1 ? <button onClick={(e) => handleUnlock(e, user_row.user_id)}>Unlock</button> : '-'}</td>
+                    <td>{user_row.failed_login_attempts}</td>
+                    <td>{user_row.wallet_balance}</td>
+                    <td>{user_row.created_at}</td>
+                    <td>{user_row.username.includes('__DELETED') ? '-' : <button onClick={() => handleDelete(user_row.user_id)}>Delete</button>}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-          {/* {paging} */}
+          {paging && <div className="paging">{paging}</div>}
         </div>
       }
+
+      {modal && (
+        <div className="modal">
+          {/* Aquí deberías implementar el contenido del modal */}
+          <h2>Add New User</h2>
+          {/* ... */}
+          <button onClick={handleModal}>Close</button>
+        </div>
+      )}
     </>
   );
 };
