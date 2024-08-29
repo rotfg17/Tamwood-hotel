@@ -31,7 +31,7 @@ try {
     if (isset($data['sid']) && $data['sid'] !== null) {
         $sessionStatus = 'active';
     }
-
+    
     // Envía la respuesta al cliente
     echo json_encode([
         'sessionStatus' => $sessionStatus !== null ? $sessionStatus : null,

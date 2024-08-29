@@ -551,7 +551,14 @@ tr th {
   text-align: center;
   color: #111;
 }
-
+.user-container button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
 /* Estilos generales para el modal */
 .modal {
   position: fixed;

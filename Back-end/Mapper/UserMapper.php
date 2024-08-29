@@ -31,12 +31,14 @@ class UserMapper {
 
         try {//need paging util
             $query = "SELECT * FROM " . $this->table_name;
+        
         if ($searchType=="username")
             $query .= " WHERE username LIKE '%".$searchString."%'";
         else if ($searchType=="email")
             $query .= " WHERE email LIKE '%".$searchString."%'";
         else if ($searchType=="role")
             $query .= " WHERE role LIKE '%".$searchString."%'";
+        
             $query .= " ORDER BY user_id DESC 
                         LIMIT :limit OFFSET :offset";
         
@@ -126,8 +128,13 @@ class UserMapper {
     }
 
     public function deleteUser(int $user_id): bool {
-        $query = "DELETE FROM " . $this->table_name . "
-                    WHERE user_id = :id";
+        $query = "
+                    UPDATE " . $this->table_name . " 
+                    SET 
+                    username = CONCAT((SELECT temp_table.username FROM (SELECT username FROM users WHERE user_id = :id) AS temp_table), '__DELETED')
+                    WHERE 
+                    user_id = :id
+                    ";        
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(":id", $user_id);
