@@ -113,6 +113,27 @@ class UserController {
             $user->setEmail($input['email']);
             $user->setPasswordHash($input['password']); // password hash
         
+            //is locked
+            $isFailedCount = $userMapper -> getFailedLoginAttempts($user ->getEmail());
+            if ($isFailedCount == 2){
+                //check time
+                if(!$userMapper -> getLockedExpired($user->getEmail())) {
+                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()."1th-lock");
+                    return $this->jsonResponse(403, ['error' => "User account is temporarily locked, please try again later"]);
+                }
+            }
+            else if ($isFailedCount == 4){
+                //check time
+                if(!$userMapper -> getLockedExpired($user->getEmail())) {
+                    $util -> Audit_Gen($_SERVER,true,$user->getEmail()."2th-lock");
+                    return $this->jsonResponse(403, ['error' => "User account is temporarily locked, please try again later"]);
+                }
+            }
+            else if($isFailedCount == 5){
+                $util -> Audit_Gen($_SERVER,true,$user->getEmail()." permanent-lock.");
+                return $this->jsonResponse(403, ['error' => "User account is permanently locked, contact admin"]);
+            }
+
             // Verificación de la contraseña
             if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
                 $userInfo = $userMapper->getUserByEmail($user->getEmail());
@@ -144,12 +165,16 @@ class UserController {
     
         // Increment the failed login attempts
         $userMapper->updateFailedLoginAttempts($user->getEmail());
-    
-        if ($isFailedCount >= 4) { // On the 5th failed attempt, lock the account permanently
+        echo $userMapper->getFailedLoginAttempts($user->getEmail());
+        if ($isFailedCount >= 5) { // On the 5th failed attempt, lock the account permanently
             // Lock the user permanently
             $userMapper->lockUserPermanently($user->getEmail());
             return $this->jsonResponse(403, ['error' => "User account is permanently locked, contact admin"]);
-        } elseif ($isFailedCount >= 2) { // On the 3rd to 4th attempt, lock the account temporarily
+        } else if ($isFailedCount == 4) { // On the 3rd to 4th attempt, lock the account temporarily
+            $lockDuration = 10; // Lock for 4 hours after 2 failed attempts
+            $userMapper->updateLockedExpire($lockDuration, $user->getEmail());
+            return $this->jsonResponse(403, ['error' => "User account is temporarily locked, please try again later"]);
+        } else if ($isFailedCount == 2) { // On the 3rd to 4th attempt, lock the account temporarily
             $lockDuration = 4; // Lock for 4 hours after 2 failed attempts
             $userMapper->updateLockedExpire($lockDuration, $user->getEmail());
             return $this->jsonResponse(403, ['error' => "User account is temporarily locked, please try again later"]);

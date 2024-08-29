@@ -170,25 +170,23 @@ class UserMapper {
         return $stmt->fetchColumn();
     }
     
-    public function updateLockedExpire(int $hour, string $email): bool {
-        $query = "UPDATE " . $this->table_name . "
-                     SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
-                     WHERE email = :email";
+    public function updateLockedExpire(int $hour, string $email) {
+        $query = "UPDATE ". $this->table_name ."
+                    SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
+                    WHERE email = :email";
+    
         $stmt = $this->conn->prepare($query);
     
         $stmt->bindParam(":hour", $hour, PDO::PARAM_INT);
         $stmt->bindParam(":email", $email);
     
-        $result = $stmt->execute();
-    
-        if (!$result) {
-            error_log("Failed to update locked_expire for email: " . $email);
-        } else {
-            error_log("Successfully updated locked_expire for email: " . $email);
+        if ($stmt->execute()) {
+            echo true;
+            return true;
         }
-    
-        return $result;
+        return false;
     }
+
     
 
     public function updateFailedLoginAttempts(string $email): bool {
@@ -262,19 +260,14 @@ class UserMapper {
     
 
     public function getLockedExpired(string $email): bool {
-        $query = "SELECT locked_expire FROM " . $this->table_name . " WHERE email = :email";
+        $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE locked_expire < NOW() AND email = :email";
+    
         $stmt = $this->conn->prepare($query);
+    
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         
-        $lockedExpire = $stmt->fetchColumn();
-        
-        if ($lockedExpire && strtotime($lockedExpire) > time()) {
-            error_log("User account is still temporarily locked for email: " . $email);
-            return false; // Temporarily locked
-        } else {
-            return true; // Not locked or lock has expired
-        }
+        return (bool) $stmt->fetchColumn();
     }
     
 
