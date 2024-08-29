@@ -21,7 +21,12 @@ try {
     // Llamada a la función route
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
-    $data = json_decode($response, true);
+    // Verifica si $response es un string y decodifícalo, o úsalo directamente si ya es un array
+    if (is_string($response)) {
+        $data = json_decode($response, true);
+    } else {
+        $data = $response;
+    }
 
     if (isset($data['sid']) && $data['sid'] !== null) {
         $sessionStatus = 'active';
@@ -38,14 +43,13 @@ try {
     echo json_encode(['error' => $error->getMessage()]);
 }
 
-
 function handleCors() {
     // Allow all origins for simplicity, adjust for production environments
     header("Access-Control-Allow-Origin: *");
     // Specify the allowed methods
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     // Specify the allowed headers
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, user-sid");
     // Handle preflight requests
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         header("HTTP/1.1 200 OK");
@@ -110,6 +114,11 @@ function route($method, $path) {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-list');
     } 
+
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/available-rooms') {
+        $controller = new BookingController($db, $method);
+        return $controller->processRequest('available-rooms');
+    }
     else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/bookings') { ///Get all bookings
         $controller = new BookingController($db, $method);
         return $controller->processRequest('bookings');
@@ -118,70 +127,70 @@ function route($method, $path) {
         $controller = new BookingController($db, $method);
         return $controller->processRequest('booking-info');
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-booking') { 
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-booking') { //When a user makes a reservation
         $controller = new BookingController($db, $method);
         return $controller->processRequest('create-booking');
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-booking-status') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-booking-status') { //approved | pending | cancelled
         $controller = new BookingController($db, $method);
         return $controller->processRequest('update-booking-status');
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-booking') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-booking') { //delete booking
         $controller = new BookingController($db, $method);
         return $controller->processRequest('delete-booking');
     }
     // Comment
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comment-list') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comment-list') { // comment list
         $controller = new CommentController($db, $method);
         return $controller->processRequest('comment-list');
     } 
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comments') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/comments') {  // Get all Comments
         $controller = new CommentController($db, $method);
         return $controller->processRequest('comments');
-    } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-comment') {
+    } else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/add-comment') { //write comment
         $controller = new CommentController($db, $method);
         return  $controller->processRequest('add-comment');
     } 
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-comment') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-comment') {//modify comment
         $controller = new CommentController($db, $method);
         return $controller->processRequest('update-comment');
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-comment') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-comment') { // delete comment
         $controller = new CommentController($db, $method);
         return $controller->processRequest('delete-comment');
     }
     // RoomController
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/room-type') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/room-type') { //get room-types
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('room-types');
 
         return $request;
     }
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/rooms') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/rooms') { //get all rooms
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('rooms');
 
         return $request;
     }
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/available-room') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/available-room') { //Get available rooms according to period
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('available-room');
 
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-room') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-room') { // Admin's func. create room
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('create-room');
 
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-room') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-room') { // Admin's func. update room
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('update-room');
 
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-room') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-room') { // Admin's func. delete room
         $controller = new RoomController($db, $method);
         $request = $controller->processRequest('delete-room');
 
@@ -189,39 +198,39 @@ function route($method, $path) {
     }
 
     // transaction
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/transactions') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/transactions') { // get transactions by user
         $controller = new TransactionController($db, $method);
         $request = $controller->processRequest('transactions');
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-transaction') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-transaction') { // add transactions && filling the wallet
         $controller = new TransactionController($db, $method);
         $request = $controller->processRequest('create-transaction');
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-transaction') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-transaction') { //Admin func. delete transaction
         $controller = new TransactionController($db, $method);
         $request = $controller->processRequest('delete-transaction');
         return $request;
     }
 
     // service
-    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/services') {
+    else if ($method === 'GET' && $parsedPath === $ROOT_PATH.'api/services') { //get All services
         $controller = new ServiceController($db, $method);
         $request = $controller->processRequest('services');
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-service') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/create-service') {// admin. add service
         $controller = new ServiceController($db, $method);
         $request = $controller->processRequest('create-service');
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-service') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/update-service') {//admin. update service
         $controller = new ServiceController($db, $method);
         $request = $controller->processRequest('update-service');
         return $request;
     }
-    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-service') {
+    else if ($method === 'POST' && $parsedPath === $ROOT_PATH.'api/delete-service') {//admin. delete service
         $controller = new ServiceController($db, $method);
         $request = $controller->processRequest('delete-service');
         return $request;
@@ -238,6 +247,7 @@ function route($method, $path) {
         header("HTTP/1.1 404 Not Found");
         return ['error' => 'Route not found'];
     }
+    
 }
 
 ?>

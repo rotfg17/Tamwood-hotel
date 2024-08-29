@@ -30,6 +30,9 @@ class UserController {
             case 'delete-user':
                 $response = $this->deleteUser();
                 break;
+            case 'register':
+                $response = $this->createUser();
+                break;
             case 'login':
                 $response = $this->Login();
                 break;
@@ -96,15 +99,17 @@ class UserController {
             if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
                 $userInfo = $userMapper->getUserByEmail($user->getEmail());
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
+                $userMapper -> initLocked($newUser->getId());
+                
                 $session = new Session();
     
                 $sid = $session->startSession($newUser);
     
                 // Reset failed login attempts after successful login
                 $userMapper->initLocked($userInfo['user_id']);
-    
+
                 $util->Audit_Gen($_SERVER, true, $user->getEmail() . " Success Login");
-                return $this->jsonResponse(200, ['sid' => $sid]);
+                return $this->jsonResponse(200, ['sid' => $sid,'user' => $newUser -> display_info()]);
     
             } else {
                 // Handle failed login attempts and lock logic here
@@ -112,32 +117,32 @@ class UserController {
             }
     
         } catch (PDOException $e) {
-            error_log("Error Login: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error Login: " . $e->getMessage()]);
         }
     }
     
     private function handleFailedLogin($user, $userMapper, $util) {
+        // Get the current number of failed login attempts
         $isFailedCount = $userMapper->getFailedLoginAttempts($user->getEmail());
     
-        if ($isFailedCount >= 5) {
-            $userMapper->lockUserPermanently($user->getEmail());
-            $util->Audit_Gen($_SERVER, true, $user->getEmail() . " permanently locked");
-            return $this->jsonResponse(500, ['fail' => "permanent-lock"]);
-        }
-    
+        // Increment the failed login attempts
         $userMapper->updateFailedLoginAttempts($user->getEmail());
     
-        if ($isFailedCount >= 2 && $isFailedCount < 5) {
-            $lockDuration = ($isFailedCount == 2) ? 4 : 10;
+        if ($isFailedCount >= 4) { // On the 5th failed attempt, lock the account permanently
+            // Lock the user permanently
+            $userMapper->lockUserPermanently($user->getEmail());
+            return $this->jsonResponse(403, ['error' => "User account is permanently locked, contact admin"]);
+        } elseif ($isFailedCount >= 2) { // On the 3rd to 4th attempt, lock the account temporarily
+            $lockDuration = 4; // Lock for 4 hours after 2 failed attempts
             $userMapper->updateLockedExpire($lockDuration, $user->getEmail());
-            $util->Audit_Gen($_SERVER, true, $user->getEmail() . " " . $isFailedCount . "-th lock");
-            return $this->jsonResponse(500, ['fail' => "$isFailedCount-th lock"]);
+            return $this->jsonResponse(403, ['error' => "User account is temporarily locked, please try again later"]);
+        } else {
+            return $this->jsonResponse(401, ["error" => "User verify fail"]);
         }
-    
-        $util->Audit_Gen($_SERVER, true, $user->getEmail() . " User verify fail");
-        return $this->jsonResponse(500, ["error" => "User verify fail"]);
     }
+    
+    
+    
     
 
     public function Logout() {
@@ -159,7 +164,7 @@ class UserController {
             $user->setName($input['name']);
             $user->setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT));
             $user->setEmail($input['email']);
-            $user->setRole('c');
+            $user->setRole('customer');
     
             // Verify email - duplicate test
             if($userMapper->verifyUserbyEmail($user->getEmail())) {
@@ -175,8 +180,10 @@ class UserController {
                     throw new Exception("Failed to create user.");
                 }
             } else {
+
                 $util->Audit_Gen($_SERVER, true, $user->getEmail()." User already exists");
                 return $this->jsonResponse(409, ['error' => 'User already exists']);
+
             }
     
         } catch (Exception $e) {
@@ -225,6 +232,7 @@ class UserController {
             $user_id = $_POST["uid"];
 
             if ($userMapper->deleteUser($user_id)) {
+
                 return $this->jsonResponse(201, ['message' => 'User Deleted']);
             } else {
                 throw new Exception("Failed to delete user.");
@@ -237,25 +245,50 @@ class UserController {
     
     public function initLocked(){
         try {
-            $role = unserialize($_SESSION['userClass'])->getRole();
-            if($role != 'admin') throw new Exception("No permission");
-
+            // Inicia la sesión si no está ya iniciada
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
+    
+            // Verifica que 'userClass' esté configurado en la sesión
+            if (!isset($_SESSION['userClass']) || empty($_SESSION['userClass'])) {
+                throw new Exception("Session userClass is not set or is empty.");
+            }
+    
+            // Deserializa el objeto 'userClass' de la sesión
+            $userClass = unserialize($_SESSION['userClass']);
+    
+            // Verifica que la deserialización fue exitosa
+            if ($userClass === false) {
+                throw new Exception("Failed to unserialize userClass.");
+            }
+    
+            // Verifica que el usuario tiene el rol adecuado
+            $role = $userClass->getRole();
+            if ($role != 'admin') {
+                throw new Exception("No permission");
+            }
+    
+            // Procede con el desbloqueo del usuario
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-
+    
             $user = new User();
             $user->setId($input['uid']);
-
+    
             if ($userMapper->initLocked($user->getId())) {
                 return $this->jsonResponse(201, ['message' => 'Locked release']);
             } else {
                 throw new Exception("Failed to update user.");
             }
         } catch (Exception $e) {
+            // Registra el error en el log y devuelve una respuesta de error en formato JSON
             error_log("Error init Lock: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
         }
     }
+    
+    
 
     private function jsonResponse($statusCode, $data) {
         header('Content-Type: application/json');

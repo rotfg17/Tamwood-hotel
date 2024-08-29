@@ -37,13 +37,13 @@ class TransactionMapper{
         try {            
             $query = "INSERT INTO " . $this->table_name . " 
                 (user_id, transaction_type, amount, description) 
-                value (:user_id, :transaction_type, :amount, :description)";
+                values (:user_id, :transaction_type, :amount, :description)";
 
             $stmt = $this->conn->prepare($query);
 
             $stmt->bindParam(':user_id', $transaction->getUserId());
             $stmt->bindParam(':transaction_type', $transaction->getTransactionType());
-            $stmt->bindParam(':amount', $transaction->getAmount());
+            $stmt->bindParam(':amount', $transaction->getAmount(), PDO::PARAM_INT);
             $stmt->bindParam(':description', $transaction->getDescription());
             
             if ($stmt->execute()) {

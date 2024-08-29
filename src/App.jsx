@@ -1,23 +1,34 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@fontsource/poppins"; // Defaults to weight 400
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import { useEffect } from "react";
+import "./App.css";
+import { useSession } from "./hooks/store/session";
+import Audit_Logs from "./pages/Audit_Logs";
+import Bookings from "./pages/Bookings";
+import Comments from "./pages/Comments";
 import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import NoPage from "./pages/NoPage";
+import RoomList from "./pages/Room_list";
+import Rooms from "./pages/Rooms";
+import Services from "./pages/Services";
+import Sessions from "./pages/Sessions";
 import Users from "./pages/Users";
 import Wallet from "./pages/Wallet";
-import Rooms from "./pages/Rooms";
-import Bookings from "./pages/Bookings";
-import Services from "./pages/Services";
-import Comments from "./pages/Comments";
-import Audit_Logs from "./pages/Audit_Logs";
-import Home from "./pages/Home";
-import RoomList from "./pages/Room_list";
-import Sessions from "./pages/Sessions";
-import NoPage from "./pages/NoPage";
-import "./App.css";
 
 // Protected route component to check for SID
 const ProtectedRoute = ({ element }) => {
+  const { setUser, setSid } = useSession();
+
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const sid = sessionStorage.getItem("sid");
+
+  useEffect(() => {
+    setUser(user);
+    setSid(sid);
+  }, []);
+
   return sid ? element : <Navigate to="/" />;
 };
 

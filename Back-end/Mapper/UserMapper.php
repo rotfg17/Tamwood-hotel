@@ -24,22 +24,23 @@ class UserMapper {
     }
 
     public function getUserList(Paging $paging, string $searchString = "", string $searchType = ""): array {
-        $records_per_page = $paging->getItemsPerPage();
-        $offset = $paging->getOffset();
+        // Page per row
+        $records_per_page = $paging -> getItemsPerPage();
+        // cal OFFSET 
+        $offset = $paging -> getOffset();
 
-        try {
+        try {//need paging util
             $query = "SELECT * FROM " . $this->table_name;
-            if ($searchType == "username") {
-                $query .= " WHERE username LIKE :searchString";
-            } else if ($searchType == "email") {
-                $query .= " WHERE email LIKE :searchString";
-            } else if ($searchType == "role") {
-                $query .= " WHERE role LIKE :searchString";
-            }
-            $query .= " ORDER BY user_id DESC LIMIT :limit OFFSET :offset";
+        if ($searchType=="username")
+            $query .= " WHERE username LIKE '%".$searchString."%'";
+        else if ($searchType=="email")
+            $query .= " WHERE email LIKE '%".$searchString."%'";
+        else if ($searchType=="role")
+            $query .= " WHERE role LIKE '%".$searchString."%'";
+            $query .= " ORDER BY user_id DESC 
+                        LIMIT :limit OFFSET :offset";
         
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':searchString', $searchString, PDO::PARAM_STR);
             $stmt->bindParam(':limit', $records_per_page, PDO::PARAM_INT);
             $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
@@ -50,7 +51,7 @@ class UserMapper {
             }
             return $users;
         } catch (PDOException $e) {
-            error_log("Error in getUserList: " . $e->getMessage());
+            error_log("Error in getUsers: " . $e->getMessage());
             return [];
         }
     }
@@ -148,15 +149,23 @@ class UserMapper {
     }
     
     public function updateLockedExpire(int $hour, string $email): bool {
-        $query = "UPDATE ". $this->table_name ."
+        $query = "UPDATE " . $this->table_name . "
                      SET locked_expire = DATE_ADD(NOW(), INTERVAL :hour HOUR)
                      WHERE email = :email";
-     
         $stmt = $this->conn->prepare($query);
-     
+    
         $stmt->bindParam(":hour", $hour, PDO::PARAM_INT);
         $stmt->bindParam(":email", $email);
-        return $stmt->execute();
+    
+        $result = $stmt->execute();
+    
+        if (!$result) {
+            error_log("Failed to update locked_expire for email: " . $email);
+        } else {
+            error_log("Successfully updated locked_expire for email: " . $email);
+        }
+    
+        return $result;
     }
     
 
@@ -179,15 +188,11 @@ class UserMapper {
     
         return $result;
     }
-    
-    
-    
 
     public function getFailedLoginAttempts(string $email) {
         $query = "SELECT failed_login_attempts FROM " . $this->table_name . " WHERE email = :email";
 
         $stmt = $this->conn->prepare($query);
-
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         
@@ -205,13 +210,11 @@ class UserMapper {
         $stmt->bindParam(':email', $email);
         return $stmt->execute();
     }
-    
-    
 
     public function unlockUser(int $user_id): bool {
         $query = "UPDATE " . $this->table_name . " 
                     SET 
-                        account_locked = 0, 
+                        is_locked = 0, 
                         failed_login_attempts = 0, 
                         locked_expire = NULL
                     WHERE 
@@ -222,7 +225,6 @@ class UserMapper {
         
         return $stmt->execute();
     }
-
     public function isUserLocked(string $email): bool {
         $query = "SELECT is_locked FROM " . $this->table_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
@@ -230,28 +232,28 @@ class UserMapper {
         $stmt->execute();
         
         $lockedStatus = $stmt->fetchColumn();
-        
-        error_log("Account locked status for " . $email . ": " . $lockedStatus); // Depuración
+        error_log("Account locked status for " . $email . ": " . $lockedStatus);
     
-        if ($lockedStatus === false) {
-            error_log("No user found with email: " . $email);
-            return false;
-        }
-    
-        return (bool) $lockedStatus;
+        return $lockedStatus == 1;
     }
     
 
     public function getLockedExpired(string $email): bool {
-        $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE locked_expire < NOW() AND email = :email";
-    
+        $query = "SELECT locked_expire FROM " . $this->table_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
-    
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         
-        return (bool) $stmt->fetchColumn();
+        $lockedExpire = $stmt->fetchColumn();
+        
+        if ($lockedExpire && strtotime($lockedExpire) > time()) {
+            error_log("User account is still temporarily locked for email: " . $email);
+            return false; // Temporarily locked
+        } else {
+            return true; // Not locked or lock has expired
+        }
     }
+    
 
     public function getUserByEmail(string $email): mixed {
         try {
@@ -271,7 +273,8 @@ class UserMapper {
     public function initLocked(int $user_id): bool {
         $query = "UPDATE ". $this->table_name ."
                     SET failed_login_attempts = 0,
-                        locked_expire = NULL
+                        locked_expire = NULL,
+                        is_locked = 0
                     WHERE user_id = :user_id";
     
         $stmt = $this->conn->prepare($query);
@@ -297,6 +300,7 @@ class UserMapper {
     
         return $stmt->execute();
     }
-}
 
+
+}
 ?>

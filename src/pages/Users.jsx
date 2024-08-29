@@ -1,19 +1,153 @@
+import React, { useEffect, useState } from "react";
+import axios from 'axios';
+import { useSession } from "../hooks/store/session";
 
 const Users = () => {
-    return (
-      <div className="Users">
-        <h1>Users</h1>
-        <form>
-        <label htmlFor="username">Username:</label>
-        <input type="text" id="username" name="username" />
-        <label htmlFor="password">Password:</label>
-        <input type="password" id="password" name="password" />
-        <button type="submit">Login</button>
-      </form>
-      
-      </div>
-     
-    );
+  const { user, sid } = useSession();
+  const [users, setUsers] = useState([]);
+  const [paging, setPaging] = useState(null);
+  const [error, setError] = useState(null);
+  const [amount, setAmount] = useState(0);
+  const [success, setSuccess] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchString, setSearchString] = useState("");
+  const [searchType, setSearchType] = useState("");
+  const [findUser, setFindUser] = useState("");
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      await axios.get(`http://localhost/Tamwood-hotel/api/user-list?currentPage=${currentPage}&searchType=${searchType}&searchString=${searchString}`)
+        .then((response) => {
+          const data = response.data;
+          setUsers(data.data.result);
+          setPaging(data.data.pagination);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      setError(error.message);
+    }
   };
-  
-  export default Users;
+
+  const handleUnlock = async (event, id) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append('uid', id);
+
+    try {
+      await axios.post('http://localhost/Tamwood-hotel/api/init-locked', formData, {
+        headers: {
+          'user-sid': sid
+        }
+      })
+        .then((response) => {
+          const result = response.data;
+          if (result.data) {
+            setSuccess("User unlocked successfully!");
+            fetchUsers(); // Refetch the users list to update the UI
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          setError("Failed to unlock the user.");
+        });
+    } catch (error) {
+      console.log("Caught an error:", error);
+      setError("An error occurred while unlocking the user.");
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append('user_id', user.id);
+    formData.append('transaction_type', 'deposit');
+    formData.append('amount', amount);
+    formData.append('description', 'test');
+    try {
+      await axios.post('http://localhost/Tamwood-hotel/api/create-transaction', formData, {
+        headers: {
+          'user-sid': sid
+        }
+      })
+        .then((response) => {
+          const result = response.data;
+          if (result.data) {
+            setSuccess("Amount added successfully!");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log("Caught an error:", error);
+      setError("Failed to add amount to the wallet.");
+    }
+  };
+
+  if (!user) {
+    return <div>Loading...</div>; // Puedes ajustar este mensaje o hacer un redireccionamiento si es necesario
+  }
+
+  return (
+    <>
+      {user.role === 'customer' &&
+        <div className="user-container">
+          <h2>Users</h2>
+          <label>Filling Wallet</label>
+          <input
+            type="text"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <button type="submit" onClick={handleSubmit}>Charging</button>
+          {success && <div className="success-message">{success}</div>}
+          {error && <div className="error-message">{error}</div>}
+        </div>
+      }
+      {user.role === 'admin' &&
+        <div className="user-container">
+          <table className="user-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Locked</th>
+                <th>Failed Login Attempts</th>
+                <th>Wallet Balance</th>
+                <th>Join Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan="7">No users available</td>
+                </tr>
+              ) : (
+                users.map((user_row, index) => (
+                  <tr key={`${user_row.user_id}-${index}`}>
+                    <td>{user_row.username}</td>
+                    <td>{user_row.email}</td>
+                    <td>{user_row.role}</td>
+                    <td>{user_row.is_locked === 1 ? <button onClick={(e) => handleUnlock(e, user_row.user_id)}>Unlock</button> : '-'}</td>
+                    <td>{user_row.failed_login_attempts}</td>
+                    <td>{user_row.wallet_balance}</td>
+                    <td>{user_row.created_at}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      }
+    </>
+  );
+};
+
+export default Users;

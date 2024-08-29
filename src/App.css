@@ -416,14 +416,11 @@ tr th {
 /* styles for rooms files*/
 .room-form {
   max-width: 600px;
-  margin: 20px auto;
+  margin: 0 auto;
   padding: 20px;
-  /* border: 1px solid #ddd; */
-  border-radius: 10px;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
-    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
-    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-  /* background-color: #f9f9f9; */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
 }
 
 .form-row {
@@ -514,6 +511,45 @@ tr th {
 .transaction-container h2 {
   text-align: center;
   color: #ffffff;
+}
+
+/* styles for User*/
+.user-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.user-table th {
+  border-bottom: 1px solid #ccc;
+}
+
+.user-table tbody tr:hover {
+  background-color: #ccc;
+}
+
+.user-table td {
+  color: #111;
+}
+
+.user-container h2 {
+  text-align: center;
+  color: #111;
 }
 
 /* Estilos generales para el modal */

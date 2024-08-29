@@ -31,7 +31,7 @@ class Paging {
     public function getPaginationLinks($baseUrl) {
         $links = [];
         for ($i = 1; $i <= $this->totalPages; $i++) {
-            $links[] = sprintf('<a href="%s?page=%d">%d</a>', $baseUrl, $i, $i);
+            $links[] = sprintf('<a href="%s?currentPage=%d">%d</a>', $baseUrl, $i, $i);
         }
         return implode(' ', $links);
     }
