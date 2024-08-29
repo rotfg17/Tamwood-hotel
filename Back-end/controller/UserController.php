@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../model/User.php';
 require_once __DIR__ . '/../mapper/UserMapper.php';
+require_once __DIR__ . '/../mapper/SessionMapper.php';
 require_once __DIR__ . '/../Utils/Paging.php';
 require_once __DIR__ . '/../Utils/Util.php';
 
@@ -140,7 +141,8 @@ class UserController {
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
                 
                 // Iniciar la sesión y almacenar el usuario
-                $_SESSION['userClass'] = serialize($newUser);
+                $sessionMapper = new SessionMapper($this->db);
+                $this->session->startSession($newUser, $sessionMapper->getSessionTime());
                 
                 // Restablecer intentos fallidos de inicio de sesión después de un inicio exitoso
                 $userMapper->initLocked($userInfo['user_id']);
@@ -205,15 +207,15 @@ class UserController {
             $user->setName($input['name']);
             $user->setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT));
             $user->setEmail($input['email']);
-            $user->setRole('customer');
+            $user->setRole($input['role']?$input['role']:'customer');
         
             // Verificar email - prueba de duplicados
             if ($userMapper->verifyUserbyEmail($user->getEmail())) {
                 if ($userMapper->createUser($user)) {
                    $util->Audit_Gen($_SERVER, true, $user->getEmail()." User created");
-    
+                    $sessionMapper = new SessionMapper($this->db);
                    // Genera o recupera el SID
-                   $sid = $this->session->startSession($user);
+                   $sid = $this->session->startSession($user, $sessionMapper->getSessionTime());
     
                    return $this->jsonResponse(201, ['success' => 'User created successfully.', 'sid' => $sid]);
                 } else {

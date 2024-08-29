@@ -10,10 +10,9 @@ class Session {
         $this->timeout = $timeout;
         if (session_status() == PHP_SESSION_NONE) {
             session_start(); // Starts the session only if it is not already active
-        }
+        }        
     }
     
-
     // Setter to update the waiting time
     public function setTimeout($timeout) {
         $this->timeout = $timeout;
@@ -25,10 +24,10 @@ class Session {
     }
     
     // Start a new session for a specific user
-    public function startSession(User $user) {
+    public function startSession(User $user, int $sessionTime) {
         $_SESSION['userClass'] = serialize($user); //Stores the User Serialized object in the session
-        $_SESSION['timeout'] = time() + 3600; // Set the Expiration time of the session
-
+        $_SESSION['timeout'] = time() + $sessionTime; // Set the Expiration time of the session
+        $this->setTimeout($sessionTime);
         return session_id(); // The ID of the current session returns
     }
 
