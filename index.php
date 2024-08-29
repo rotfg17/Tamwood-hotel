@@ -44,12 +44,15 @@ try {
 }
 
 function handleCors() {
-    // Allow all origins for simplicity, adjust for production environments
-    header("Access-Control-Allow-Origin: *");
+    // Allow requests only from the frontend origin
+    header("Access-Control-Allow-Origin: http://localhost:5173");
     // Specify the allowed methods
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     // Specify the allowed headers
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, user-sid");
+    // Allow credentials (important for cookies and session handling)
+    header("Access-Control-Allow-Credentials: true");
+
     // Handle preflight requests
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         header("HTTP/1.1 200 OK");
@@ -249,5 +252,4 @@ function route($method, $path) {
     }
     
 }
-
 ?>
