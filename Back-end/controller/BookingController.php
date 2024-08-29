@@ -138,7 +138,7 @@ class BookingController{
             //insert booking-service table
             $result = $bookingMapper -> createBookingService($bsArray);
 
-            // $util -> Audit_Gen($_SERVER,true,unserialize($_SESSION['userClass']) -> getEmail()." successfully booking");
+            $util -> Audit_Gen($_SERVER,true,unserialize($_SESSION['userClass']) -> getEmail()." successfully booking");
             return $this->jsonResponse(200, $result);
         }catch(Exception $e) {
             error_log("Error creating booking: " . $e->getMessage());
