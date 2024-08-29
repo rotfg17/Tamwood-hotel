@@ -91,35 +91,36 @@ class UserController {
             $util = new Util();
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-    
-            // Setting User Class
+        
+            // Configuración de la clase User
             $user = new User();
             $user->setEmail($input['email']);
             $user->setPasswordHash($input['password']); // password hash
-    
-            // Password verification
+        
+            // Verificación de la contraseña
             if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
                 $userInfo = $userMapper->getUserByEmail($user->getEmail());
                 $newUser = new User($userInfo['user_id'], $userInfo['username'], $userInfo['password_hash'], $userInfo['email'], $userInfo['role'], $userInfo['wallet_balance']);
-                $userMapper -> initLocked($newUser->getId());
                 
-                $sid = $this->session->startSession($newUser);
-    
-                // Reset failed login attempts after successful login
+                // Iniciar la sesión y almacenar el usuario
+                $_SESSION['userClass'] = serialize($newUser);
+                
+                // Restablecer intentos fallidos de inicio de sesión después de un inicio exitoso
                 $userMapper->initLocked($userInfo['user_id']);
-
+        
                 $util->Audit_Gen($_SERVER, true, $user->getEmail() . " Success Login");
-                return $this->jsonResponse(200, ['sid' => $sid,'user' => $newUser -> display_info()]);
-    
+                return $this->jsonResponse(200, ['sid' => session_id(),'user' => $newUser->display_info()]);
+        
             } else {
-                // Handle failed login attempts and lock logic here
+                // Manejar intentos fallidos de inicio de sesión y lógica de bloqueo aquí
                 return $this->handleFailedLogin($user, $userMapper, $util);
             }
-    
+        
         } catch (PDOException $e) {
             return $this->jsonResponse(500, ["error" => "Error Login: " . $e->getMessage()]);
         }
     }
+    
     
     private function handleFailedLogin($user, $userMapper, $util) {
         // Get the current number of failed login attempts
@@ -147,22 +148,26 @@ class UserController {
         header("Location: /Tamwood-hotel/");
         exit();
     }
-
     public function createUser() {
         try {
             $util = new Util();
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-    
-            // Setting User Class
+        
+            // Verifica que todos los campos necesarios están presentes
+            if (!isset($input['name']) || !isset($input['password']) || !isset($input['email'])) {
+                return $this->jsonResponse(400, ['error' => 'Missing required fields: name, email, or password']);
+            }
+        
+            // Configuración de la clase User
             $user = new User();
             $user->setName($input['name']);
             $user->setPasswordHash(password_hash($input['password'], PASSWORD_BCRYPT));
             $user->setEmail($input['email']);
             $user->setRole('customer');
-    
-            // Verify email - duplicate test
-            if($userMapper->verifyUserbyEmail($user->getEmail())) {
+        
+            // Verificar email - prueba de duplicados
+            if ($userMapper->verifyUserbyEmail($user->getEmail())) {
                 if ($userMapper->createUser($user)) {
                    $util->Audit_Gen($_SERVER, true, $user->getEmail()." User created");
     
@@ -183,6 +188,7 @@ class UserController {
             return $this->jsonResponse(500, ["error" => "Error creating user: " . $e->getMessage()]);
         }
     }
+    
 
     public function updateUser() {
         try {

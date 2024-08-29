@@ -8,11 +8,16 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [paging, setPaging] = useState(null);
   const [error, setError] = useState(null);
-  const [amount, setAmount] = useState(0);
   const [success, setSuccess] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchString, setSearchString] = useState("");
   const [searchType, setSearchType] = useState("");
+
+  // Estado para el formulario de agregar usuario
+  const [newUsername, setNewUsername] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRole, setNewRole] = useState("customer");
 
   useEffect(() => {
     fetchUsers();
@@ -57,30 +62,6 @@ const Users = () => {
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const formData = new FormData();
-    formData.append('user_id', user.id);
-    formData.append('transaction_type', 'deposit');
-    formData.append('amount', amount);
-    formData.append('description', 'test');
-    try {
-      const response = await axios.post('http://localhost/Tamwood-hotel/api/create-transaction', formData, {
-        headers: {
-          'user-sid': sid
-        }
-      });
-      if (response.data && response.data.message) {
-        setSuccess(response.data.message);
-      } else {
-        setError("Failed to add amount to the wallet.");
-      }
-    } catch (error) {
-      console.log("Caught an error:", error);
-      setError("Failed to add amount to the wallet.");
-    }
-  };
-
   const handleModal = () => {
     setModal(!modal);
   };
@@ -89,6 +70,36 @@ const Users = () => {
     // Aquí debes implementar la lógica para eliminar un usuario
     console.log(`Delete user with ID: ${id}`);
     // Recuerda llamar a fetchUsers() después de eliminar el usuario
+  };
+
+  const handleAddUser = async (event) => {
+    event.preventDefault();
+    const formData = {
+      username: newUsername,
+      email: newEmail,
+      password: newPassword,
+      role: newRole
+    };
+
+    try {
+      const response = await axios.post('http://localhost/Tamwood-hotel/api/add-user', formData, {
+        headers: {
+          'user-sid': sid,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data && response.data.message) {
+        setSuccess(response.data.message);
+        setModal(false);
+        fetchUsers(); // Refrescar la lista de usuarios
+      } else {
+        setError("Failed to add new user.");
+      }
+    } catch (error) {
+      console.log("Caught an error:", error);
+      setError("Failed to add new user.");
+    }
   };
 
   return (
@@ -109,15 +120,16 @@ const Users = () => {
       }
       {user?.role === 'admin' &&
         <div className="user-container">
-          <div>
+          <div className="user-controls">
             <input 
               type="text" 
               value={searchString} 
               onChange={(e) => setSearchString(e.target.value)} 
               placeholder="Search users"
+              className="search-input"
             />
-            <button onClick={fetchUsers}>Search</button>
-            <button onClick={handleModal}>Add User</button>
+            <button onClick={fetchUsers} className="search-button">Search</button>
+            <button onClick={handleModal} className="add-user-button">Add User</button>
           </div>
           <table className="user-table">
             <thead>
@@ -159,10 +171,44 @@ const Users = () => {
 
       {modal && (
         <div className="modal">
-          {/* Aquí deberías implementar el contenido del modal */}
-          <h2>Add New User</h2>
-          {/* ... */}
-          <button onClick={handleModal}>Close</button>
+          <div className="modal-content">
+            <h2>Add New User</h2>
+            <form onSubmit={handleAddUser}>
+              <label>Username</label>
+              <input 
+                type="text" 
+                value={newUsername} 
+                onChange={(e) => setNewUsername(e.target.value)} 
+                required
+              />
+              <label>Email</label>
+              <input 
+                type="email" 
+                value={newEmail} 
+                onChange={(e) => setNewEmail(e.target.value)} 
+                required
+              />
+              <label>Password</label>
+              <input 
+                type="password" 
+                value={newPassword} 
+                onChange={(e) => setNewPassword(e.target.value)} 
+                required
+              />
+              <label>Role</label>
+              <select 
+                value={newRole} 
+                onChange={(e) => setNewRole(e.target.value)}
+                required
+              >
+                <option value="customer">Customer</option>
+                <option value="admin">Admin</option>
+                {/* Agrega más roles según sea necesario */}
+              </select>
+              <button type="submit" className="submit-button">Add User</button>
+            </form>
+            <button onClick={handleModal} className="close-button">Close</button>
+          </div>
         </div>
       )}
     </>
