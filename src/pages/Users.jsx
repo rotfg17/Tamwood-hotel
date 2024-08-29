@@ -9,6 +9,7 @@ const Users = () => {
   const [userInfo, setUserInfo] = useState();
   const [users, setUsers] = useState([]);
   const [paging, setPaging] = useState(null);
+  const [amount, setAmount] = useState(0);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
