@@ -23,6 +23,8 @@ const Users = () => {
   const [newRole, setNewRole] = useState("customer");
 
   useEffect(() => {
+    axios.defaults.withCredentials = true;
+
     if (user && user.role === "customer") {
       fetchUser();
     }
@@ -128,9 +130,31 @@ const Users = () => {
   };
 
   const handleDelete = async (id) => {
-    // Aquí debes implementar la lógica para eliminar un usuario
-    console.log(`Delete user with ID: ${id}`);
-    // Recuerda llamar a fetchUsers() después de eliminar el usuario
+    const formData = new FormData();
+    formData.append("uid", id);
+    console.log(id);
+
+    try {
+      await axios
+        .post("http://localhost/Tamwood-hotel/api/delete-user", formData, {
+          headers: {
+            "user-sid": sid,
+          },
+        })
+        .then(function (response) {
+          const result = response.data;
+          if (result.data) {
+            setSuccess(true);
+            fetchUsers();
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log("Caught an error:", error);
+      setError("Fail to Filling the wallet");
+    }
   };
 
   const handleAddUser = async (event) => {

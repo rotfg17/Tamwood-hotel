@@ -51,7 +51,7 @@ const Home = () => {
     }
 
     try {
-      const response = await axios.post(url, data, { withCredentials: true });
+      const response = await axios.post(url, data);
       const result = response.data;
 
       if (result.error) {

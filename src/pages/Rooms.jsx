@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Room from "../components/Room";
 import { useSession } from "../hooks/store/session";
 
 const RoomForm = () => {
@@ -35,7 +36,6 @@ const RoomForm = () => {
     }
 
     try {
-      // console.log(sessionKey);
       const response = await axios.post(
         "http://localhost/Tamwood-hotel/api/create-room",
         data,
@@ -179,19 +179,12 @@ const RoomForm = () => {
                 <th>Price</th>
                 <th>Check In</th>
                 <th>Check Out</th>
+                <th>Comment</th>
               </tr>
             </thead>
             <tbody>
               {rooms.map((room) => {
-                return (
-                  <tr key={room.booking_id}>
-                    <td>{room.room_number}</td>
-                    <td>{room.status}</td>
-                    <td>{room.total_price}</td>
-                    <td>{room.check_in_date}</td>
-                    <td>{room.check_out_date}</td>
-                  </tr>
-                );
+                return <Room key={room.id} room={room} />;
               })}
             </tbody>
           </table>

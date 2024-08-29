@@ -160,6 +160,8 @@ const Bookings = () => {
   };
 
   useEffect(() => {
+    axios.defaults.withCredentials = true;
+
     if (formData.check_in_date && formData.check_out_date) {
       fetchRooms();
     }

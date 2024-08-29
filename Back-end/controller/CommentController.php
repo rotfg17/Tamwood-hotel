@@ -84,7 +84,7 @@ class CommentController
       $input = $_POST;
 
       $comments = new Comment();
-      $comments->setUserId($input['comment_id']);
+      $comments->setUserId($input['user_id']);
       $comments->setRoomId($input['room_id']);
       $comments->setCommentText($input['comment_text']);
       $comments->setRating($input['rating']);
