@@ -248,54 +248,25 @@ class UserController {
         }
     }
     
-    public function initLocked() {
+    public function initLocked(){
         try {
-            // Inicia la sesión si no está ya iniciada
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
-    
-            // Verifica el estado de la sesión
-            $sessionStatus = $this->session->getSession();
-            if ($sessionStatus !== 'active') {
-                throw new Exception("Session expired or invalid. Please log in again.");
-            }
-    
-            // Verifica que 'userClass' esté configurado en la sesión
-            if (!isset($_SESSION['userClass']) || empty($_SESSION['userClass'])) {
-                throw new Exception("Session userClass is not set or is empty.");
-            }
-    
-            // Deserializa el objeto 'userClass' de la sesión
-            $userClass = unserialize($_SESSION['userClass']);
-    
-            // Verifica que la deserialización fue exitosa
-            if ($userClass === false) {
-                throw new Exception("Failed to unserialize userClass.");
-            }
-    
-            // Verifica que el usuario tiene el rol adecuado
-            if ($userClass->getRole() != 'admin') {
-                throw new Exception("You do not have permission to perform this action.");
-            }
-    
-            // Procede con el desbloqueo del usuario
+            $role = unserialize($_SESSION['userClass'])->getRole();
+            if($role != 'admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-    
-            if (!isset($input['uid'])) {
-                throw new Exception("User ID is missing.");
-            }
-    
-            if ($userMapper->unlockUser($input['uid'])) {
-                return $this->jsonResponse(200, ['message' => 'User unlocked successfully']);
+
+            $user = new User();
+            $user->setId($input['uid']);
+
+            if ($userMapper->initLocked($user->getId())) {
+                return $this->jsonResponse(201, ['message' => 'Locked release']);
             } else {
-                throw new Exception("Failed to unlock the user.");
+                throw new Exception("Failed to update user.");
             }
         } catch (Exception $e) {
-            // Registra el error en el log y devuelve una respuesta de error en formato JSON
-            error_log("Error unlocking user: " . $e->getMessage());
-            return $this->jsonResponse(500, ["error" => "Error unlocking user: " . $e->getMessage()]);
+            error_log("Error init Lock: " . $e->getMessage());
+            return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
         }
     }
     
