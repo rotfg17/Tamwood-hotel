@@ -555,7 +555,24 @@ tr th {
   cursor: pointer;
 }
 
-.error-message, .success-message {
-  color: #FFFFFF;
+.error-message,
+.success-message {
+  color: #ffffff;
   margin-bottom: 10px;
+}
+
+.Bookings {
+  form {
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    gap: 20px;
+    button {
+      padding: 12px;
+    }
+    .service {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
 }
