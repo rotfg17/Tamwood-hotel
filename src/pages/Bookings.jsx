@@ -171,39 +171,32 @@ const Bookings = () => {
           required
         />
 
-        <label htmlFor="services">Services</label>
-        {services.map((service) => (
-          <div className="service" key={service.service_name}>
-            <div>
-              <input
-                type="checkbox"
-                id={service.service_name}
-                name={service.service_name}
-                checked={!!checkedServices[service.service_name]}
-                onChange={() => handleCheckboxChange(service.service_name)}
-              />
-              <label htmlFor={service.service_name}>
-                {service.service_name}
-              </label>
-            </div>
-            {/* Show the number input only if the service is checked */}
-            {checkedServices[service.service_name] && (
-              <input
-                type="number"
-                name={`${service.service_name}_amount`}
-                min="1"
-                placeholder="Enter amount"
-                onChange={(e) =>
-                  handleServiceQuantityChange(
-                    service.service_name,
-                    e.target.value
-                  )
-                }
-              />
-            )}
-          </div>
-        ))}
-
+<div className="services-header">Select Additional Services:</div>
+    <div className="services">
+      {services.map((service) => (
+        <div className="service" key={service.service_name}>
+          <input
+            type="checkbox"
+            id={service.service_name}
+            name={service.service_name}
+            checked={!!checkedServices[service.service_name]}
+            onChange={() => handleCheckboxChange(service.service_name)}
+          />
+          <label htmlFor={service.service_name}>{service.service_name}</label>
+          {checkedServices[service.service_name] && (
+            <input
+              type="number"
+              name={`${service.service_name}_amount`}
+              min="1"
+              placeholder="Qty"
+              onChange={(e) =>
+                handleServiceQuantityChange(service.service_name, e.target.value)
+              }
+            />
+          )}
+        </div>
+      ))}
+    </div>
         <button type="submit">Book room</button>
       </form>
       {error && <div className="error-message">{error}</div>}
