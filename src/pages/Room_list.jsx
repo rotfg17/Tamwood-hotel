@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../hooks/store/session";
+axios.defaults.withCredentials = true;
 
 const RoomList = () => {
   const { user } = useSession();

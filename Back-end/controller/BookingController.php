@@ -109,17 +109,20 @@ class BookingController{
             $booking -> setRoomId($input['room_id']);
             $booking -> setCheckInDate($input['check_in_date']);
             $booking -> setCheckOutDate($input['check_out_date']);
-            $serviceArr = $input['service'];
+            $serviceArr = $input['service']? $input['service']:[];
 
             //calculate date between in-out date
             $interval = $util -> getDays($booking -> getCheckInDate(), $booking -> getCheckOutDate());
 
             //bring room_price
             $roomPrice = $roomMapper -> getRoomPrice($booking -> getRoomId(), $interval);
-            //get service price
-            $serviceTotalArray = $serviceMapper -> getServicePrice($serviceArr);
-            $serviceTotalPrice = array_sum($serviceTotalArray);
 
+            $serviceTotalPrice = 0;
+            //get service price
+            if(count($serviceArr)>0){
+                $serviceTotalArray = $serviceMapper -> getServicePrice($serviceArr);
+                $serviceTotalPrice = array_sum($serviceTotalArray);
+            }
             //calc total price
             $totalPrice = $roomPrice + $serviceTotalPrice;
             $booking -> setTotalPrice($totalPrice);
@@ -129,16 +132,18 @@ class BookingController{
 
             // booking_service: booing_id, service_id, quantity
             $bsArray = [];
-            for($i=0; $i < count($serviceArr['service_id']); $i++){
-                $bookingService = new BookingService($lastBookingIdx, 
-                                                     $serviceArr['service_id'][$i], 
-                                                     $serviceArr['quantity'][$i], 
-                                                     $serviceTotalArray[$i]);
-                array_push($bsArray,$bookingService);
-            }
-            //insert booking-service table
-            $result = $bookingMapper -> createBookingService($bsArray);
+            if(count($serviceArr)>0){
+                for($i=0; $i < count($serviceArr['service_id']); $i++){
+                    $bookingService = new BookingService($lastBookingIdx, 
+                                                         $serviceArr['service_id'][$i], 
+                                                         $serviceArr['quantity'][$i], 
+                                                         $serviceTotalArray[$i]);
+                    array_push($bsArray,$bookingService);
+                }
 
+                //insert booking-service table
+                $result = $bookingMapper -> createBookingService($bsArray);
+            }
             $util -> Audit_Gen($_SERVER, true, unserialize($_SESSION['userClass']) -> getEmail()." successfully booking");
             return $this->jsonResponse(200, $result);
         }catch(Exception $e) {

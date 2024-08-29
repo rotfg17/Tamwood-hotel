@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/png/logo.png";
 
+axios.defaults.withCredentials = true;
+
 const Header = () => {
   const [modal, setModal] = useState(false);
   const [register, setRegister] = useState(false);

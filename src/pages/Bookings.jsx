@@ -81,12 +81,12 @@ const Bookings = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Error creating booking");
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (!response.data.data) throw new Error("Error creating booking");
+      // const data = await response.json();
+      // if (data.error) throw new Error(data.error);
 
       // Handle success (e.g., show success message, redirect, etc.)
-      console.log("Booking created successfully:", data);
+      console.log("Booking created successfully:");
     } catch (error) {
       setError(error.message);
     }
@@ -94,6 +94,7 @@ const Bookings = () => {
 
   const fetchRooms = async () => {
     try {
+      
       const response = await fetch(
         `http://localhost/Tamwood-hotel/api/available-room?checkInDate=${formData.check_in_date}&checkOutDate=${formData.check_out_date}`
       );
@@ -161,13 +162,13 @@ const Bookings = () => {
 
   useEffect(() => {
     axios.defaults.withCredentials = true;
-
     if (formData.check_in_date && formData.check_out_date) {
       fetchRooms();
     }
   }, [formData.check_in_date, formData.check_out_date]);
 
   useEffect(() => {
+    axios.defaults.withCredentials = true;
     if (user && user.role !== "customer") {
       fetchBooking();
       return;

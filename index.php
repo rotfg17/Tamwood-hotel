@@ -17,7 +17,7 @@ handleCors();
 try {
     $session = new Session();
     $sessionStatus = $session->getSession();
-    
+
     // Llamada a la función route
     $response = route($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 

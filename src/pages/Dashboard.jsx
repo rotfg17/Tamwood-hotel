@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../App.css"; // Asegúrate de importar el archivo CSS correcto
 
+
 const Dashboard = () => {
   const [isSettingsMenuVisible, setSettingsMenuVisible] = useState(false);
   const [isNotificationsMenuVisible, setNotificationsMenuVisible] =

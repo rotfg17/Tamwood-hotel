@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Room from "../components/Room";
 import { useSession } from "../hooks/store/session";
+axios.defaults.withCredentials = true;
 
 const RoomForm = () => {
   const { sid, user } = useSession();

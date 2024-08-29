@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSession } from "../hooks/store/session";
 
+axios.defaults.withCredentials = true;
+
 const Comments = () => {
   const { sid } = useSession();
 

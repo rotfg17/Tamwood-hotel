@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import "../App.css"; // Asegúrate de que el archivo .css esté correctamente ubicado
 import { useSession } from "../hooks/store/session";
+axios.defaults.withCredentials = true;
 
 const Services = () => {
   const { sid } = useSession();
