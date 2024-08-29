@@ -83,8 +83,9 @@ class BookingController{
     public function getBookingInfo() {
         try {
             $bookingId = isset($_GET['bookingId']) ? $_GET['bookingId'] : "";
+            $userId = isset($_GET['userId']) ? $_GET['userId'] : "";
             $bookingMapper = new BookingMapper($this->db);
-            $result = $bookingMapper->getBookingInfo($bookingId);
+            $result = $bookingMapper->getBookingInfo($bookingId, $userId);
             return $this->jsonResponse(200, $result);
         } catch (PDOException $e) {
             error_log("Error getting bookings: " . $e->getMessage()); // error log
