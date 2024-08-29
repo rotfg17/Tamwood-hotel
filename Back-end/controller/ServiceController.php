@@ -52,8 +52,8 @@ class ServiceController {
 
     public function createService() {
         try {
-            $role = unserialize($_SESSION['userClass']) -> getRole();
-            if($role!='admin' && $role != 'staff') throw new Exception("Failed to create Service.");
+            // $role = unserialize($_SESSION['userClass']) -> getRole();
+            // if($role!='admin' && $role != 'staff') throw new Exception("Failed to create Service.");
 
             $serviceMapper = new ServiceMapper($this->db);
             $input = $_POST;
@@ -74,8 +74,8 @@ class ServiceController {
 
     public function updateService() {
         try {
-            $role = unserialize($_SESSION['userClass']) -> getRole();
-            if($role!='admin' && $role != 'staff') throw new Exception("Failed to update Service.");
+            // $role = unserialize($_SESSION['userClass']) -> getRole();
+            // if($role!='admin' && $role != 'staff') throw new Exception("Failed to update Service.");
 
             $serviceMapper = new ServiceMapper($this->db);
             $input = $_POST;
@@ -97,8 +97,8 @@ class ServiceController {
 
     public function deleteService() {
         try {
-            $role = unserialize($_SESSION['userClass']) -> getRole();
-            if($role!='admin' && $role != 'staff') throw new Exception("Failed to delete booking.");
+            // $role = unserialize($_SESSION['userClass']) -> getRole();
+            // if($role!='admin' && $role != 'staff') throw new Exception("Failed to delete booking.");
 
             $serviceMapper = new ServiceMapper($this->db);
             $input = $_POST;

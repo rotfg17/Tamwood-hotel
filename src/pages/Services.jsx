@@ -1,7 +1,11 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import "../App.css"; // Asegúrate de que el archivo .css esté correctamente ubicado
+import { useSession } from "../hooks/store/session";
 
 const Services = () => {
+  const { sid } = useSession();
+
   const [services, setServices] = useState([]);
   const [newService, setNewService] = useState({
     service_name: "",
@@ -38,20 +42,22 @@ const Services = () => {
 
   // Función para agregar un nuevo servicio
   const handleAddService = async () => {
+    const data = new FormData();
+    data.append("service_name", newService.service_name);
+    data.append("service_description", newService.service_description);
+    data.append("price", newService.price);
+
     try {
-      const response = await fetch(
+      await axios.post(
         "http://localhost/Tamwood-hotel/api/create-service",
+        data,
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "user-sid": sid,
           },
-          body: JSON.stringify(newService),
         }
       );
-      if (!response.ok) {
-        throw new Error("Error creating service");
-      }
+
       setSuccess("Service added successfully");
       setNewService({ service_name: "", service_description: "", price: "" });
       fetchServices(); // Refrescar la lista de servicios después de agregar
@@ -63,20 +69,23 @@ const Services = () => {
 
   // Función para editar un servicio existente
   const handleEditService = async () => {
+    const data = new FormData();
+    data.append("service_id", editService.service_id);
+    data.append("service_name", editService.service_name);
+    data.append("service_description", editService.service_description);
+    data.append("price", editService.price);
+
     try {
-      const response = await fetch(
+      await axios.post(
         "http://localhost/Tamwood-hotel/api/update-service",
+        data,
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "user-sid": sid,
           },
-          body: JSON.stringify(editService),
         }
       );
-      if (!response.ok) {
-        throw new Error("Error updating service");
-      }
+
       setSuccess("Service updated successfully");
       setEditService({
         service_id: null,
@@ -99,20 +108,20 @@ const Services = () => {
 
   // Función para eliminar un servicio
   const handleDeleteService = async () => {
+    const data = new FormData();
+    data.append("service_id", deleteServiceId);
+
     try {
-      const response = await fetch(
+      await axios.post(
         "http://localhost/Tamwood-hotel/api/delete-service",
+        data,
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "user-sid": sid,
           },
-          body: JSON.stringify({ service_id: deleteServiceId }),
         }
       );
-      if (!response.ok) {
-        throw new Error("Error deleting service");
-      }
+
       setSuccess("Service deleted successfully");
       fetchServices(); // Refrescar la lista de servicios después de eliminar
       setShowDeleteModal(false); // Cerrar el modal

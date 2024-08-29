@@ -218,7 +218,7 @@ const Users = () => {
       )}
       {user?.role === "admin" && (
         <div className="user-container">
-          <div>
+          {/* <div>
             <input
               type="text"
               value={searchString}
@@ -232,7 +232,7 @@ const Users = () => {
             <button onClick={handleModal} className="add-user-button">
               Add User
             </button>
-          </div>
+          </div> */}
           <table className="user-table">
             <thead>
               <tr>
@@ -285,7 +285,7 @@ const Users = () => {
               )}
             </tbody>
           </table>
-          {paging && <div className="paging">{paging}</div>}
+          {/* {paging && <div className="paging">{paging}</div>} */}
         </div>
       )}
 
