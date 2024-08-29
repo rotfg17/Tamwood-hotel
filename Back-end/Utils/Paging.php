@@ -11,7 +11,13 @@ class Paging {
         $this->itemsPerPage = (int)$itemsPerPage;
         $this->totalPages = (int)ceil($this->totalItems / $this->itemsPerPage);
     }
-
+    function display_info():array{
+        $outputArray = [];
+        foreach($this as $key=>$val){
+            $outputArray += [$key=>$val];
+        }
+        return $outputArray;
+    }
     public function getCurrentPage() {
         return $this->currentPage;
     }

@@ -94,7 +94,7 @@ class UserController {
             $user = new User();
             $user->setEmail($input['email']);
             $user->setPasswordHash($input['password']); // password hash
-    
+            
             // Password verification
             if (password_verify($user->getPasswordHash(), $userMapper->getPassword($user))) {
                 $userInfo = $userMapper->getUserByEmail($user->getEmail());
@@ -225,8 +225,9 @@ class UserController {
 
     public function deleteUser() {
         try {
-            $role = unserialize($_SESSION['userClass'])->getRole();
-            if($role != 'admin') throw new Exception("No permission");
+            // print_r (unserialize($_SESSION['userClass']));
+            // $role = unserialize($_SESSION['sid'])->getRole();
+            // if($role != 'admin') throw new Exception("No permission");
 
             $userMapper = new UserMapper($this->db);
             $user_id = $_POST["uid"];
@@ -245,56 +246,31 @@ class UserController {
     
     public function initLocked(){
         try {
-            // Inicia la sesión si no está ya iniciada
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
-    
-            // Verifica que 'userClass' esté configurado en la sesión
-            if (!isset($_SESSION['userClass']) || empty($_SESSION['userClass'])) {
-                throw new Exception("Session userClass is not set or is empty.");
-            }
-    
-            // Deserializa el objeto 'userClass' de la sesión
-            $userClass = unserialize($_SESSION['userClass']);
-    
-            // Verifica que la deserialización fue exitosa
-            if ($userClass === false) {
-                throw new Exception("Failed to unserialize userClass.");
-            }
-    
-            // Verifica que el usuario tiene el rol adecuado
-            $role = $userClass->getRole();
-            if ($role != 'admin') {
-                throw new Exception("No permission");
-            }
-    
-            // Procede con el desbloqueo del usuario
+            // print_r(unserialize($_SESSION['userClass']));
+            // $role = unserialize($_SESSION['userClass'])->getRole();
+            // if($role != 'admin') throw new Exception("No permission");
+
             $userMapper = new UserMapper($this->db);
             $input = $_POST;
-    
+
             $user = new User();
             $user->setId($input['uid']);
-    
+
             if ($userMapper->initLocked($user->getId())) {
                 return $this->jsonResponse(201, ['message' => 'Locked release']);
             } else {
                 throw new Exception("Failed to update user.");
             }
         } catch (Exception $e) {
-            // Registra el error en el log y devuelve una respuesta de error en formato JSON
             error_log("Error init Lock: " . $e->getMessage());
             return $this->jsonResponse(500, ["error" => "Error init Lock: " . $e->getMessage()]);
         }
     }
-    
-    
 
     private function jsonResponse($statusCode, $data) {
-        header('Content-Type: application/json');
+        header("Content-Type: application/json");
         http_response_code($statusCode);
-        echo json_encode(['sessionStatus' => null, 'data' => $data]);
-        exit;
+        return json_encode($data);
     }
     
     private function notFoundResponse() {
