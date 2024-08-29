@@ -59,17 +59,18 @@ const Home = () => {
         setError(result.error);
       } else if (result.data && result.data.sid) {
         const sid = result.data.sid;
-        const user = JSON.stringify(result.data.user);
+        const user = result.data.user; // Asumiendo que el backend devuelve el usuario autenticado
 
         sessionStorage.setItem("sid", sid);
-        sessionStorage.setItem("user", user);
+        sessionStorage.setItem("user", JSON.stringify(user));
 
         setSuccess("Login successful");
-        // Redirigir al dashboard según el contexto
-        if (register) {
-          window.location.href = "/customer-dashboard";
-        } else {
+
+        // Redirigir al dashboard basado en el rol del usuario
+        if (user.role === "admin") {
           window.location.href = "/dashboard";
+        } else {
+          window.location.href = "/customer-dashboard";
         }
       } else {
         setError("Authentication failed. Please try again.");
