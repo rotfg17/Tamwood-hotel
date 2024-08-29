@@ -177,30 +177,6 @@ class BookingMapper{
             }
             return false;
     }
-
-    public function getAvailableRooms($checkInDate, $checkOutDate) {
-        try {
-            $query = "SELECT * FROM rooms WHERE room_id NOT IN (
-                        SELECT room_id FROM bookings 
-                        WHERE check_in_date < :checkOutDate 
-                        AND check_out_date > :checkInDate
-                      )";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':checkInDate', $checkInDate);
-            $stmt->bindParam(':checkOutDate', $checkOutDate);
-            $stmt->execute();
-            
-            $rooms = [];
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $rooms[] = $row;
-            }
-            return $rooms;
-        } catch (PDOException $e) {
-            error_log("Error in getAvailableRooms: " . $e->getMessage());
-            return [];
-        }
-    }
-    
 }
 
 ?>
