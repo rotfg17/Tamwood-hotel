@@ -1,7 +1,7 @@
-import React from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import "../App.css";
 import Header from "./Header";
-import { Link } from "react-router-dom";
 
 const Home = () => {
   const [modal, setModal] = useState(false);
