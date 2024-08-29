@@ -232,6 +232,7 @@ class UserMapper {
         
         return $stmt->execute();
     }
+    
     public function isUserLocked(string $email): bool {
         $query = "SELECT is_locked FROM " . $this->table_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
